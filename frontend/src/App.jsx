@@ -6,6 +6,7 @@ import InteractiveWorkflow from './components/InteractiveWorkflow.jsx';
 import RoleSimulator from './components/RoleSimulator.jsx';
 import AnalyticsPreview from './components/AnalyticsPreview.jsx';
 import { ToastContainer } from './components/Toast';
+import CreateRfq from './components/CreateRfq.jsx';
 
 // Import all Console Views
 import {
@@ -1021,7 +1022,7 @@ function App() {
                 />
               )}
               {consoleTab === 'rfqs' && (
-                <ConsoleRFQs 
+                <CreateRfq 
                   rfqs={rfqs} 
                   setRfqs={setRfqs} 
                   vendors={vendors}
