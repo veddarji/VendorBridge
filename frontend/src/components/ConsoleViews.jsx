@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 // ==========================================
 // 1. DASHBOARD OVERVIEW VIEW (Screen 3)
 // ==========================================
-export function ConsoleDashboard({ vendors, rfqs, quotes, auditLogs, onNavigate, userRole }) {
+export function ConsoleDashboard({ vendors, rfqs, auditLogs, onNavigate, userRole }) {
   const pendingApprovalsCount = rfqs.filter(r => r.status === 'Awaiting Approval').length;
   const activeRfqsCount = rfqs.filter(r => r.status === 'Active').length;
   
@@ -704,7 +704,8 @@ export function ConsoleApprovals({ rfqs, setRfqs, addLog, onNavigate, setPoData 
     
     if (status === 'approve') {
       // Set the active PO details to display in the PO screen
-      const poNum = `PO-2026-98${Math.floor(Math.random() * 90) + 10}`;
+      const suffix = String(rfq.id).replace(/\D/g, '').slice(-2).padStart(2, '0');
+      const poNum = `PO-2026-98${suffix}`;
       setPoData({
         poNumber: poNum,
         rfqId: rfq.id,
