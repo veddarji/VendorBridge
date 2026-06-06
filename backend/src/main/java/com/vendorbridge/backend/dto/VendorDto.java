@@ -3,6 +3,7 @@ package com.vendorbridge.backend.dto;
 import lombok.Builder;
 import lombok.Data;
 
+/** Javadoc. */
 @Data
 @Builder
 /**

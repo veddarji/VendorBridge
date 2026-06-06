@@ -18,10 +18,10 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
 /**
  * Class documentation.
  */
+@Service
 public class QuotationService {
 
     private final QuotationRepository quotationRepository;
@@ -29,6 +29,9 @@ public class QuotationService {
     private final VendorRepository vendorRepository;
     private final UserRepository userRepository;
 
+    /**
+     * Constructor Javadoc.
+     */
     public QuotationService(QuotationRepository quotationRepository, RfqRepository rfqRepository, 
                             VendorRepository vendorRepository, UserRepository userRepository) {
         this.quotationRepository = quotationRepository;
@@ -45,6 +48,9 @@ public class QuotationService {
         ).stream().map(this::mapToDto).collect(Collectors.toList());
     }
 
+    /**
+     * Method documentation.
+     */
     @Transactional
     public QuotationDto createQuotation(QuotationDto dto) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -62,8 +68,8 @@ public class QuotationService {
                     newVendor.setCategory("General");
                     newVendor.setGstNumber("GST-" + System.currentTimeMillis());
                     newVendor.setContactEmail(currentUser.getEmail());
-                    newVendor.setContactPhone(
-        currentUser.getPhoneNumber() != null ? currentUser.getPhoneNumber() : "000");
+                    newVendor.setContactPhone(currentUser.getPhoneNumber() != null 
+                            ? currentUser.getPhoneNumber() : "000");
                     newVendor.setAddress("Unknown");
                     newVendor.setUser(currentUser);
                     return vendorRepository.save(newVendor);

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/** Javadoc. */
 @RestController
 @RequestMapping("/api/quotes")
 /**

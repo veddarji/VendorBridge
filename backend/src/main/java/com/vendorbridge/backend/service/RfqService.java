@@ -20,18 +20,22 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
 /**
  * Class documentation.
  */
+@Service
 public class RfqService {
 
     private final RfqRepository rfqRepository;
     private final RfqItemRepository rfqItemRepository;
     private final UserRepository userRepository;
 
-    public RfqService(
-        RfqRepository rfqRepository, RfqItemRepository rfqItemRepository, UserRepository userRepository) {
+    /**
+     * Constructor Javadoc.
+     */
+    public RfqService(RfqRepository rfqRepository, 
+                      RfqItemRepository rfqItemRepository, 
+                      UserRepository userRepository) {
         this.rfqRepository = rfqRepository;
         this.rfqItemRepository = rfqItemRepository;
         this.userRepository = userRepository;
@@ -44,11 +48,14 @@ public class RfqService {
         return rfqRepository.findAll().stream().map(this::mapToDto).collect(Collectors.toList());
     }
 
+    /**
+     * Method documentation.
+     */
     @Transactional
     public RfqDto createRfq(RfqDto rfqDto) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User currentUser =
-        userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         Rfq rfq = new Rfq();
         rfq.setRfqNumber("RFQ-" + System.currentTimeMillis());
@@ -57,8 +64,8 @@ public class RfqService {
         
         // Parse deadline
         if (rfqDto.getDeadline() != null) {
-            rfq.setDeadline(
-        LocalDate.parse(rfqDto.getDeadline(), DateTimeFormatter.ofPattern("yyyy-MM-dd")).atStartOfDay());
+            rfq.setDeadline(LocalDate.parse(rfqDto.getDeadline(), 
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd")).atStartOfDay());
         } else {
             rfq.setDeadline(LocalDateTime.now().plusDays(14));
         }
