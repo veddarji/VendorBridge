@@ -24,7 +24,9 @@ jobs:
         cache: maven
         
     - name: Run Checkstyle
-      run: ./mvnw checkstyle:check
+      run: |
+        chmod +x ./mvnw
+        ./mvnw checkstyle:check
 
   frontend-lint:
     name: Frontend ESLint
