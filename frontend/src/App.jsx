@@ -237,22 +237,52 @@ function App() {
       return;
     }
 
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const matchedUser = users.find(
-      (u) => u.email.toLowerCase() === loginEmail.toLowerCase() && u.password === loginPassword,
-    );
-
-    if (matchedUser) {
-      addToast(`Welcome back, ${matchedUser.firstName}!`, 'success');
-      setCurrentUser(matchedUser);
-      localStorage.setItem('currentUser', JSON.stringify(matchedUser));
-      setView('dashboard');
-    } else {
-      addToast(
-        'Invalid email or password. Try demo accounts (e.g. officer@vendorbridge.com / password123)',
-        'error',
-      );
-    }
+    fetch('http://localhost:8081/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: loginEmail,
+        password: loginPassword,
+      }),
+    })
+      .then((res) => {
+        if (!res.ok) {
+          return res.json()
+            .then((err) => {
+              throw new Error(err.message || 'Invalid email or password');
+            })
+            .catch(() => {
+              throw new Error('Connection error or invalid credentials');
+            });
+        }
+        return res.json();
+      })
+      .then((data) => {
+        addToast(`Welcome back, ${data.firstName}!`, 'success');
+        setCurrentUser(data);
+        localStorage.setItem('currentUser', JSON.stringify(data));
+        
+        const localUsers = JSON.parse(localStorage.getItem('users') || '[]');
+        if (!localUsers.some((u) => u.email.toLowerCase() === data.email.toLowerCase())) {
+          localUsers.push({
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            role: data.role,
+            country: data.country,
+            phone: data.phone,
+            photo: data.photo,
+            additionalInfo: data.additionalInfo,
+          });
+          localStorage.setItem('users', JSON.stringify(localUsers));
+        }
+        setView('dashboard');
+      })
+      .catch((err) => {
+        addToast(err.message, 'error');
+      });
   };
 
   const handleRegisterSubmit = (e) => {
@@ -294,41 +324,71 @@ function App() {
       return;
     }
 
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    if (users.some((u) => u.email.toLowerCase() === regEmail.toLowerCase())) {
-      addToast('This email is already registered.', 'error');
-      return;
-    }
-
-    const newUser = {
-      firstName: regFirstName,
-      lastName: regLastName,
-      email: regEmail,
-      phone: regPhone,
+    const signupPayload = {
+      firstName: regFirstName.trim(),
+      lastName: regLastName.trim(),
+      email: regEmail.trim().toLowerCase(),
+      phone: regPhone.trim(),
       role: regRole,
-      country: regCountry,
-      additionalInfo: regInfo,
+      country: regCountry.trim(),
       password: regPassword,
       photo: regPhoto,
+      additionalInfo: regInfo.trim(),
     };
 
-    const updatedUsers = [...users, newUser];
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
+    fetch('http://localhost:8081/api/auth/signup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(signupPayload),
+    })
+      .then((res) => {
+        if (!res.ok) {
+          return res.json()
+            .then((err) => {
+              throw new Error(err.message || 'Registration failed');
+            })
+            .catch(() => {
+              throw new Error('Connection error or invalid field data');
+            });
+        }
+        return res.json();
+      })
+      .then((data) => {
+        addToast('Account created successfully! You can now log in.', 'success');
+        
+        // Clear registration fields
+        setRegFirstName('');
+        setRegLastName('');
+        setRegEmail('');
+        setRegPhone('');
+        setRegCountry('');
+        setRegInfo('');
+        setRegPassword('');
+        setRegConfirmPassword('');
+        setRegPhoto(null);
 
-    addToast('Account created successfully! You can now log in.', 'success');
+        const localUsers = JSON.parse(localStorage.getItem('users') || '[]');
+        if (!localUsers.some((u) => u.email.toLowerCase() === data.email.toLowerCase())) {
+          localUsers.push({
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            role: data.role,
+            country: data.country,
+            phone: data.phone,
+            photo: data.photo,
+            additionalInfo: data.additionalInfo,
+          });
+          localStorage.setItem('users', JSON.stringify(localUsers));
+        }
 
-    // Clear registration fields
-    setRegFirstName('');
-    setRegLastName('');
-    setRegEmail('');
-    setRegPhone('');
-    setRegCountry('');
-    setRegInfo('');
-    setRegPassword('');
-    setRegConfirmPassword('');
-    setRegPhoto(null);
-
-    setView('login');
+        setView('login');
+      })
+      .catch((err) => {
+        addToast(err.message, 'error');
+      });
   };
 
   const handleForgotSubmit = (e) => {
