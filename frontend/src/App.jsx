@@ -6,12 +6,12 @@ import InteractiveWorkflow from './components/InteractiveWorkflow.jsx';
 import RoleSimulator from './components/RoleSimulator.jsx';
 import AnalyticsPreview from './components/AnalyticsPreview.jsx';
 import { ToastContainer } from './components/Toast';
+import CreateRfq from './components/CreateRfq.jsx';
+import Vendors from './components/Vendors.jsx';
 
-// Import all Console Views
+// Import Console Views
 import {
   ConsoleDashboard,
-  ConsoleVendors,
-  ConsoleRFQs,
   ConsoleSubmitQuote,
   ConsoleCompare,
   ConsoleApprovals,
@@ -92,12 +92,48 @@ function App() {
   // SHARED STATE ENGINE (SIMULATED DATABASE)
   // ==========================================
   
-  // 1. Vendor Partners Directory State
-  const [vendors, setVendors] = useState([
-    { name: 'Apex Industries Ltd', category: 'Manufacturing', gst: '29AAACA5481M1Z3', email: 'billing@apexindustries.com', rating: '4.8/5.0', status: 'Active' },
-    { name: 'Zenith Tech Solutions', category: 'IT Services', gst: '29AABBB8490C1ZH', email: 'sales@zenithtech.com', rating: '4.2/5.0', status: 'Active' },
-    { name: 'SolarTech Energy Corp', category: 'Utilities', gst: '29AACCC4120D2Z1', email: 'contracts@solartech.com', rating: '4.5/5.0', status: 'Active' },
-  ]);
+  const [sharedVendors, setSharedVendors] = useState(() => {
+    try {
+      const saved = localStorage.getItem('vendors');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch {
+      // ignore
+    }
+    return [
+      { id: 1, name: 'Apex Industries Ltd', category: 'Manufacturing', gst: '29AAACA5481M1Z3', contact: '+91 99000 11111', email: 'billing@apexindustries.com', rating: '4.8/5.0', status: 'Active' },
+      { id: 2, name: 'Zenith Tech Solutions', category: 'IT Services', gst: '29AABBB8490C1ZH', contact: '+91 22222 11111', email: 'sales@zenithtech.com', rating: '4.2/5.0', status: 'Active' },
+      { id: 3, name: 'SolarTech Energy Corp', category: 'Utilities', gst: '29AACCC4120D2Z1', contact: '+91 33333 44444', email: 'contracts@solartech.com', rating: '4.5/5.0', status: 'Active' },
+      { id: 4, name: 'Infra Supplies Pvt Ltd', category: 'Constructions', gst: '27AAACCS1429B1Z0', contact: '+91 98765 43210', email: 'sales@infrasupplies.com', rating: '4.5/5.0', status: 'Active' },
+      { id: 5, name: 'Tech Core LTD', category: 'IT', gst: '27AABC5678Z0', contact: '+91 87654 32109', email: 'support@techcore.com', rating: '4.2/5.0', status: 'Active' },
+      { id: 6, name: 'Fasting Transport', category: 'Logistics', gst: '27AABC9012Z0', contact: '+91 76543 21098', email: 'info@fastingtransport.com', rating: '3.8/5.0', status: 'Blocked' },
+      { id: 7, name: 'Apex Builders', category: 'Constructions', gst: '27AABC1111Z1', contact: '+91 99999 88888', email: 'bids@apexbuilders.com', rating: '4.6/5.0', status: 'Active' },
+      { id: 8, name: 'ByteWave Software', category: 'IT', gst: '27AABC2222Z2', contact: '+91 88888 77777', email: 'sales@bytewave.com', rating: '4.4/5.0', status: 'Active' },
+      { id: 9, name: 'Swift Cargo logistics', category: 'Logistics', gst: '27AABC3333Z3', contact: '+91 77777 66666', email: 'ops@swiftcargo.com', rating: '4.1/5.0', status: 'Active' },
+      { id: 10, name: 'Nova Industries', category: 'Manufacturing', gst: '27AABC4444Z4', contact: '+91 66666 55555', email: 'contact@novaind.com', rating: '4.3/5.0', status: 'Active' },
+      { id: 11, name: 'Beacon Consultants', category: 'Consulting', gst: '27AABC5555Z5', contact: '+91 55555 44444', email: 'hello@beacon.com', rating: '4.7/5.0', status: 'Active' },
+      { id: 12, name: 'Vertex Services', category: 'Services', gst: '27AABC6666Z6', contact: '+91 44444 33333', email: 'service@vertex.com', rating: '4.0/5.0', status: 'Active' },
+      { id: 13, name: 'Blue Sky Energy', category: 'Energy', gst: '27AABC7777Z7', contact: '+91 33333 22222', email: 'clean@bluesky.com', rating: '4.5/5.0', status: 'Active' },
+      { id: 14, name: 'Global Logistics Corp', category: 'Logistics', gst: '27AABC9999Z9', contact: '+91 11111 00000', email: 'global@logistics.com', rating: '4.2/5.0', status: 'Active' },
+      { id: 15, name: 'Prime Metal Works', category: 'Manufacturing', gst: '27AABCA1B2C3', contact: '+91 98123 45678', email: 'info@primemetal.com', rating: '4.4/5.0', status: 'Active' },
+      { id: 16, name: 'Alpha Consultants', category: 'Consulting', gst: '27AABCD4E5F6', contact: '+91 98234 56789', email: 'partner@alphaconsult.com', rating: '4.6/5.0', status: 'Active' },
+      { id: 17, name: 'Omni Facility Services', category: 'Services', gst: '27AABCG7H8I9', contact: '+91 98345 67890', email: 'admin@omnifacility.com', rating: '4.1/5.0', status: 'Active' },
+      { id: 18, name: 'EcoPower Systems', category: 'Energy', gst: '27AABCJ0K1L2', contact: '+91 98456 78901', email: 'green@ecopower.com', rating: '4.3/5.0', status: 'Active' },
+      { id: 19, name: 'Matrix IT Consultants', category: 'IT', gst: '27AABCM3N4O5', contact: '+91 98567 89012', email: 'hr@matrixit.com', rating: '4.5/5.0', status: 'Active' },
+      { id: 20, name: 'Titan Logistics', category: 'Logistics', gst: '27AABCP6Q7R8', contact: '+91 98678 90123', email: 'dispatch@titan.com', rating: '4.0/5.0', status: 'Active' },
+      { id: 21, name: 'Eagle Steel Fabrication', category: 'Manufacturing', gst: '27AABCS9T0U1', contact: '+91 98789 01234', email: 'sales@eaglesteel.com', rating: '4.4/5.0', status: 'Active' },
+      { id: 22, name: 'Stratosphere Consulting', category: 'Consulting', gst: '27AABCV2W3X4', contact: '+91 98890 12345', email: 'exec@stratosphere.com', rating: '4.7/5.0', status: 'Active' },
+      { id: 23, name: 'Pioneer Facility Care', category: 'Services', gst: '27AABCY5Z6A7', contact: '+91 98901 23456', email: 'pioneer@facility.com', rating: '4.2/5.0', status: 'Active' },
+      { id: 24, name: 'Dynamic Tech Inc', category: 'IT', gst: '27AABCB8C9D0', contact: '+91 99012 34567', email: 'innovate@dynamictech.com', rating: '4.3/5.0', status: 'Pending' },
+      { id: 25, name: 'Greenfield Agri Solutions', category: 'Agriculture', gst: '27AABCE1F2G3', contact: '+91 99123 45678', email: 'deals@greenfieldagri.com', rating: '4.1/5.0', status: 'Pending' },
+      { id: 26, name: 'Falcon Express', category: 'Logistics', gst: '27AABCH4I5J6', contact: '+91 99234 56789', email: 'express@falcon.com', rating: '4.0/5.0', status: 'Pending' },
+      { id: 27, name: 'Steel Weld Corp', category: 'Manufacturing', gst: '27AABCK7L8M9', contact: '+91 99345 67890', email: 'welding@steelweld.com', rating: '4.3/5.0', status: 'Pending' },
+      { id: 28, name: 'Rogue Traders', category: 'Trading', gst: '27AABCN0O1P2', contact: '+91 99456 78901', email: 'contact@roguetraders.com', rating: '2.5/5.0', status: 'Blocked' },
+      { id: 29, name: 'Shady Supplies', category: 'Constructions', gst: '27AABCT8U9V0', contact: '+91 99567 89012', email: 'sales@shadysupplies.com', rating: '1.8/5.0', status: 'Blocked' },
+      { id: 30, name: 'Quantum Energy (Suspended)', category: 'Energy', gst: '27AABCQ3R4S5', contact: '+91 99678 90123', email: 'legal@quantumenergy.com', rating: '3.5/5.0', status: 'Blocked' },
+    ];
+  });
 
   // 2. Broadcasted RFQs State
   const [rfqs, setRfqs] = useState([
@@ -324,53 +360,23 @@ function App() {
       return;
     }
 
-    fetch('http://localhost:8081/api/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: loginEmail,
-        password: loginPassword,
-      }),
-    })
-      .then((res) => {
-        if (!res.ok) {
-          return res.json()
-            .then((err) => {
-              throw new Error(err.message || 'Invalid email or password');
-            })
-            .catch(() => {
-              throw new Error('Connection error or invalid credentials');
-            });
-        }
-        return res.json();
-      })
-      .then((data) => {
-        addToast(`Welcome back, ${data.firstName}!`, 'success');
-        setCurrentUser(data);
-        localStorage.setItem('currentUser', JSON.stringify(data));
-        
-        const localUsers = JSON.parse(localStorage.getItem('users') || '[]');
-        if (!localUsers.some((u) => u.email.toLowerCase() === data.email.toLowerCase())) {
-          localUsers.push({
-            firstName: data.firstName,
-            lastName: data.lastName,
-            email: data.email,
-            role: data.role,
-            country: data.country,
-            phone: data.phone,
-            photo: data.photo,
-            additionalInfo: data.additionalInfo,
-          });
-          localStorage.setItem('users', JSON.stringify(localUsers));
-        }
-        setView('dashboard');
-        addLog(data.role, 'Successfully signed into the ERP console.');
-      })
-      .catch((err) => {
-        addToast(err.message, 'error');
-      });
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const matchedUser = users.find(
+      (u) => u.email.toLowerCase() === loginEmail.toLowerCase() && u.password === loginPassword,
+    );
+
+    if (matchedUser) {
+      addToast(`Welcome back, ${matchedUser.firstName}!`, 'success');
+      setCurrentUser(matchedUser);
+      localStorage.setItem('currentUser', JSON.stringify(matchedUser));
+      setView('dashboard');
+      addLog(matchedUser.role, 'Successfully signed into the ERP console.');
+    } else {
+      addToast(
+        'Invalid email or password. Try demo accounts (e.g. officer@vendorbridge.com / password123)',
+        'error',
+      );
+    }
   };
 
   const handleRegisterSubmit = (e) => {
@@ -412,71 +418,41 @@ function App() {
       return;
     }
 
-    const signupPayload = {
-      firstName: regFirstName.trim(),
-      lastName: regLastName.trim(),
-      email: regEmail.trim().toLowerCase(),
-      phone: regPhone.trim(),
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    if (users.some((u) => u.email.toLowerCase() === regEmail.toLowerCase())) {
+      addToast('This email is already registered.', 'error');
+      return;
+    }
+
+    const newUser = {
+      firstName: regFirstName,
+      lastName: regLastName,
+      email: regEmail,
+      phone: regPhone,
       role: regRole,
-      country: regCountry.trim(),
+      country: regCountry,
+      additionalInfo: regInfo,
       password: regPassword,
       photo: regPhoto,
-      additionalInfo: regInfo.trim(),
     };
 
-    fetch('http://localhost:8081/api/auth/signup', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(signupPayload),
-    })
-      .then((res) => {
-        if (!res.ok) {
-          return res.json()
-            .then((err) => {
-              throw new Error(err.message || 'Registration failed');
-            })
-            .catch(() => {
-              throw new Error('Connection error or invalid field data');
-            });
-        }
-        return res.json();
-      })
-      .then((data) => {
-        addToast('Account created successfully! You can now log in.', 'success');
-        
-        // Clear registration fields
-        setRegFirstName('');
-        setRegLastName('');
-        setRegEmail('');
-        setRegPhone('');
-        setRegCountry('');
-        setRegInfo('');
-        setRegPassword('');
-        setRegConfirmPassword('');
-        setRegPhoto(null);
+    const updatedUsers = [...users, newUser];
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
 
-        const localUsers = JSON.parse(localStorage.getItem('users') || '[]');
-        if (!localUsers.some((u) => u.email.toLowerCase() === data.email.toLowerCase())) {
-          localUsers.push({
-            firstName: data.firstName,
-            lastName: data.lastName,
-            email: data.email,
-            role: data.role,
-            country: data.country,
-            phone: data.phone,
-            photo: data.photo,
-            additionalInfo: data.additionalInfo,
-          });
-          localStorage.setItem('users', JSON.stringify(localUsers));
-        }
+    addToast('Account created successfully! You can now log in.', 'success');
 
-        setView('login');
-      })
-      .catch((err) => {
-        addToast(err.message, 'error');
-      });
+    // Clear registration fields
+    setRegFirstName('');
+    setRegLastName('');
+    setRegEmail('');
+    setRegPhone('');
+    setRegCountry('');
+    setRegInfo('');
+    setRegPassword('');
+    setRegConfirmPassword('');
+    setRegPhoto(null);
+
+    setView('login');
   };
 
   const handleForgotSubmit = (e) => {
@@ -566,7 +542,7 @@ function App() {
                 country: 'India',
                 phone: '+91 99999 99999',
                 additionalInfo: 'Simulated Demo Account',
-                photo: null
+                photo: null,
               };
               setCurrentUser(demoUser);
               setView('dashboard');
@@ -585,7 +561,7 @@ function App() {
                 country: 'India',
                 phone: '+91 99999 99999',
                 additionalInfo: 'Simulated Demo Account',
-                photo: null
+                photo: null,
               };
               setCurrentUser(demoUser);
               setView('dashboard');
@@ -1065,7 +1041,7 @@ function App() {
             <div className="console-content">
               {consoleTab === 'dashboard' && (
                 <ConsoleDashboard 
-                  vendors={vendors} 
+                  vendors={sharedVendors} 
                   rfqs={rfqs} 
                   quotes={quotes} 
                   auditLogs={auditLogs} 
@@ -1074,17 +1050,13 @@ function App() {
                 />
               )}
               {consoleTab === 'vendors' && (
-                <ConsoleVendors 
-                  vendors={vendors} 
-                  setVendors={setVendors}
-                  addLog={addLog}
-                />
+                <Vendors vendors={sharedVendors} setVendors={setSharedVendors} />
               )}
               {consoleTab === 'rfqs' && (
-                <ConsoleRFQs 
+                <CreateRfq 
                   rfqs={rfqs} 
                   setRfqs={setRfqs} 
-                  vendors={vendors}
+                  vendors={sharedVendors}
                   addLog={addLog}
                   onNavigate={handleNavigateConsole}
                 />
@@ -1095,7 +1067,7 @@ function App() {
                   quotes={quotes} 
                   setQuotes={setQuotes}
                   setRfqs={setRfqs}
-                  vendors={vendors}
+                  vendors={sharedVendors}
                   addLog={addLog}
                   onNavigate={handleNavigateConsole}
                 />
