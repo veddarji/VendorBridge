@@ -1,0 +1,351 @@
+/* Auth Page Container - Centered Single View Layout */
+.auth-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: 40px 20px;
+  background-color: var(--bg-primary);
+  position: relative;
+}
+
+/* Background details */
+.auth-page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: radial-gradient(rgba(100, 255, 218, 0.05) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Auth Cards matching the photo sketch */
+.auth-card {
+  width: 100%;
+  max-width: 420px; /* Screen 1 Login card width */
+  background-color: var(--bg-secondary);
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 40px 32px 32px 32px;
+  box-shadow: var(--shadow-xl);
+  z-index: 10;
+  animation: fadeIn var(--transition-slow) forwards;
+  position: relative;
+}
+
+.auth-card.register-card {
+  max-width: 640px; /* Screen 2 Register card width (wider for grid) */
+  padding: 40px 32px 28px 32px;
+  margin-bottom: 24px; /* Space for Register button outside */
+}
+
+/* Photo Circle Placeholder strictly from mockup */
+.photo-circle-placeholder {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 2px dashed var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 36px auto;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  background-color: rgba(100, 255, 218, 0.02);
+  text-transform: capitalize;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.photo-circle-placeholder:hover {
+  border-color: var(--primary);
+  border-style: solid;
+  transform: scale(1.03);
+  box-shadow: 0 0 12px var(--primary-glow-strong);
+}
+
+.photo-circle-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-hover-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(10, 25, 47, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--primary);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.photo-circle-placeholder:hover .photo-hover-overlay {
+  opacity: 1;
+}
+
+/* Photo options & Capture camera preview container */
+.photo-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.photo-option-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.photo-option-btn:hover {
+  border-color: var(--primary);
+  background-color: var(--primary-glow);
+  transform: translateY(-1px);
+}
+
+.camera-preview-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  width: 100%;
+}
+
+.camera-video {
+  width: 100%;
+  max-width: 360px;
+  height: 240px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--primary);
+  background-color: #000000;
+  transform: scaleX(-1); /* Mirroring webcam stream */
+  object-fit: cover;
+}
+
+/* Input layout grids */
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--text-primary); /* High contrast to match photo text labels */
+  text-align: left;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 600px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
+/* Custom rounded outline buttons matching the mockup style */
+.btn-sketch-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 36px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 9999px; /* Pill-shaped / oval */
+  border: 2px solid var(--primary);
+  background-color: transparent;
+  color: var(--primary);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+  outline: none;
+}
+
+.btn-sketch-outline:hover {
+  background-color: var(--primary-glow);
+  box-shadow: 0 0 15px var(--primary-glow-strong);
+  transform: translateY(-1px);
+}
+
+.btn-sketch-outline:active {
+  transform: translateY(0);
+}
+
+/* Centering actions in card */
+.login-action-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+.register-action-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  z-index: 10;
+}
+
+/* Minimal navigation switcher below views */
+.auth-view-switcher {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  z-index: 10;
+}
+
+.auth-view-switcher a {
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Input wrappers for clean layout */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+/* Modal / Forgot Password styling */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(10, 25, 47, 0.8);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.modal-content {
+  background-color: var(--bg-secondary);
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: var(--shadow-xl);
+  animation: fadeIn var(--transition-normal) forwards;
+}
+
+.modal-header h4 {
+  font-size: 1.35rem;
+  margin-bottom: 8px;
+}
+
+.modal-header p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Dashboard Mock elements */
+.dashboard-mock {
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: left;
+  width: 100%;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 40px;
+}
+
+.user-role-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background-color: var(--primary-glow);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.dashboard-card {
+  background-color: var(--bg-secondary);
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  transition: all var(--transition-normal);
+}
+
+.dashboard-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 20px var(--primary-glow);
+}
+
+.dashboard-card h4 {
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.dashboard-card .value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.dashboard-card .desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
