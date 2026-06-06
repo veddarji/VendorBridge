@@ -898,60 +898,60 @@ function App() {
               <span>Vendor<span style={{ color: 'var(--accent)' }}>Bridge</span></span>
             </div>
 
-            <div className="sidebar-menu">
+            <div className="sidebar-menu" style={{ gap: '8px' }}>
               <button 
                 onClick={() => handleNavigateConsole('dashboard')}
                 className={`menu-item ${consoleTab === 'dashboard' ? 'active' : ''}`}
               >
-                📊 Dashboard Overview
+                - Dashboard
               </button>
               <button 
                 onClick={() => handleNavigateConsole('vendors')}
                 className={`menu-item ${consoleTab === 'vendors' ? 'active' : ''}`}
               >
-                🏢 Vendor Directory
+                - Vendors
               </button>
               <button 
                 onClick={() => handleNavigateConsole('rfqs')}
                 className={`menu-item ${consoleTab === 'rfqs' ? 'active' : ''}`}
               >
-                📝 RFQ Composer
+                - RFQ's
               </button>
               <button 
                 onClick={() => handleNavigateConsole('quotes')}
-                className={`menu-item ${consoleTab === 'quotes' ? 'active' : ''}`}
+                className={`menu-item ${consoleTab === 'quotes' || consoleTab === 'compare' ? 'active' : ''}`}
               >
-                📩 Submit Bids
-              </button>
-              <button 
-                onClick={() => handleNavigateConsole('compare')}
-                className={`menu-item ${consoleTab === 'compare' ? 'active' : ''}`}
-              >
-                ⚖️ Compare Quotes
+                - Quotations
               </button>
               <button 
                 onClick={() => handleNavigateConsole('approvals')}
                 className={`menu-item ${consoleTab === 'approvals' ? 'active' : ''}`}
               >
-                🛡️ Approvals Desk
+                - Approvals
               </button>
               <button 
                 onClick={() => handleNavigateConsole('pos')}
                 className={`menu-item ${consoleTab === 'pos' ? 'active' : ''}`}
               >
-                📄 PO & Invoices
+                - Purchase orders
               </button>
               <button 
-                onClick={() => handleNavigateConsole('logs')}
-                className={`menu-item ${consoleTab === 'logs' ? 'active' : ''}`}
+                onClick={() => handleNavigateConsole('pos')}
+                className={`menu-item ${consoleTab === 'invoices' ? 'active' : ''}`}
               >
-                🔍 Audit Trails
+                - Invoices
               </button>
               <button 
                 onClick={() => handleNavigateConsole('analytics')}
                 className={`menu-item ${consoleTab === 'analytics' ? 'active' : ''}`}
               >
-                📈 Reports & Trends
+                - Reports
+              </button>
+              <button 
+                onClick={() => handleNavigateConsole('logs')}
+                className={`menu-item ${consoleTab === 'logs' ? 'active' : ''}`}
+              >
+                - Activity
               </button>
             </div>
 
