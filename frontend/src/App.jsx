@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import './Auth.css';
 import { ToastContainer } from './components/Toast';
+import DashboardLayout from './components/DashboardLayout';
+import Vendors from './components/Vendors';
 
 const ROLES = [
   { id: 'officer', name: 'Procurement Officer' },
@@ -31,6 +33,7 @@ function App() {
 
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
   const [toasts, setToasts] = useState([]);
+  const [activeTab, setActiveTab] = useState('vendors');
 
   // Auth Form State
   const [loginEmail, setLoginEmail] = useState('');
@@ -660,121 +663,47 @@ function App() {
       )}
 
       {view === 'dashboard' && (
-        <div className="dashboard-mock animate-fade-in">
-          <div className="dashboard-header">
-            <div>
-              <h2 style={{ fontSize: '2rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                {currentUser?.photo ? (
-                  <img
-                    src={currentUser.photo}
-                    alt="Avatar"
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      border: '2px solid var(--primary)',
-                    }}
-                  />
-                ) : (
-                  <svg
-                    width="28"
-                    height="28"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    style={{ color: 'var(--primary)' }}
-                  >
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                  </svg>
-                )}
-                <span style={{ marginLeft: '8px' }}>VendorBridge ERP</span>
-              </h2>
-              <p style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>
-                Connected as:{' '}
-                <strong>
-                  {currentUser?.firstName} {currentUser?.lastName}
-                </strong>{' '}
-                ({currentUser?.email})
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <span className="user-role-tag">
-                {ROLES.find((r) => r.id === currentUser?.role)?.name || currentUser?.role}
-              </span>
-              <button className="btn-secondary" onClick={handleLogout}>
-                Logout
-              </button>
-            </div>
-          </div>
-
-          <div style={{ marginBottom: '32px' }}>
-            <h3 style={{ fontSize: '1.4rem', marginBottom: '8px' }}>Auth Flow Successful!</h3>
-            <p style={{ color: 'var(--text-secondary)' }}>
-              You have authenticated successfully with local session persistence. In subsequent
-              steps, we will build out full modules for this dashboard interface based on your role
-              privileges.
-            </p>
-          </div>
-
-          <div className="card-grid">
-            <div className="dashboard-card">
-              <h4>Role-Based Access Control</h4>
-              <div className="value">{currentUser?.role.toUpperCase()}</div>
-              <p className="desc">Permissions locked to this account profile details.</p>
-            </div>
-            <div className="dashboard-card">
-              <h4>Active Session State</h4>
-              <div className="value">PERSISTENT</div>
-              <p className="desc">
-                Refreshing the page keeps you logged in via secure local storage.
-              </p>
-            </div>
-            <div className="dashboard-card">
-              <h4>Mock Database Accounts</h4>
-              <div className="value">
-                {JSON.parse(localStorage.getItem('users') || '[]').length} Registered
+        <DashboardLayout
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          currentUser={currentUser}
+          onLogout={handleLogout}
+        >
+          {activeTab === 'vendors' ? (
+            <Vendors />
+          ) : (
+            <div className="dashboard-mock animate-fade-in">
+              <div style={{ marginBottom: '32px' }}>
+                <h3 style={{ fontSize: '1.4rem', marginBottom: '8px' }}>Auth Flow Successful!</h3>
+                <p style={{ color: 'var(--text-secondary)' }}>
+                  You have authenticated successfully with local session persistence. Select the "Vendors" tab on the left to see the Vendor Management Screen.
+                </p>
               </div>
-              <p className="desc">Total users currently stored in your browser's environment.</p>
-            </div>
-          </div>
 
-          <div
-            style={{
-              backgroundColor: 'var(--bg-secondary)',
-              padding: '24px',
-              borderRadius: 'var(--radius-lg)',
-              border: '2px solid var(--border-light)',
-            }}
-          >
-            <h4 style={{ marginBottom: '12px' }}>Your Profile Data</h4>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '150px 1fr',
-                gap: '12px',
-                fontSize: '0.95rem',
-              }}
-            >
-              <span style={{ color: 'var(--text-muted)' }}>Full Name:</span>
-              <span>
-                {currentUser?.firstName} {currentUser?.lastName}
-              </span>
-              <span style={{ color: 'var(--text-muted)' }}>Email:</span>
-              <span>{currentUser?.email}</span>
-              <span style={{ color: 'var(--text-muted)' }}>Phone:</span>
-              <span>{currentUser?.phone}</span>
-              <span style={{ color: 'var(--text-muted)' }}>Country:</span>
-              <span>{currentUser?.country}</span>
-              <span style={{ color: 'var(--text-muted)' }}>Additional Details:</span>
-              <span>{currentUser?.additionalInfo || 'N/A'}</span>
+              <div className="card-grid">
+                <div className="dashboard-card">
+                  <h4>Role-Based Access Control</h4>
+                  <div className="value">{currentUser?.role?.toUpperCase() || 'N/A'}</div>
+                  <p className="desc">Permissions locked to this account profile details.</p>
+                </div>
+                <div className="dashboard-card">
+                  <h4>Active Session State</h4>
+                  <div className="value">PERSISTENT</div>
+                  <p className="desc">
+                    Refreshing the page keeps you logged in via secure local storage.
+                  </p>
+                </div>
+                <div className="dashboard-card">
+                  <h4>Mock Database Accounts</h4>
+                  <div className="value">
+                    {JSON.parse(localStorage.getItem('users') || '[]').length} Registered
+                  </div>
+                  <p className="desc">Total users currently stored in your browser's environment.</p>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          )}
+        </DashboardLayout>
       )}
 
       {/* Forgot Password Modal */}
