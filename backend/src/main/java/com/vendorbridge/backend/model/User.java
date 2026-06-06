@@ -54,6 +54,15 @@ public class User {
     @Column(length = 20, nullable = false)
     private UserStatus status = UserStatus.ACTIVE;
 
+    @Column(name = "photo", columnDefinition = "LONGTEXT")
+    private String photo;
+
+    @Column(name = "country", length = 100)
+    private String country;
+
+    @Column(name = "additional_info", length = 255)
+    private String additionalInfo;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

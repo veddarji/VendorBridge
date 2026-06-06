@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 
 export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
-  if (!isOpen) return null;
-
   const [activeTab, setActiveTab] = useState('login'); // 'login', 'signup', 'forgot'
   const [role, setRole] = useState('procurement_officer'); // Default role
   const [email, setEmail] = useState('');
@@ -11,6 +9,8 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
   const [companyName, setCompanyName] = useState('');
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
+
+  if (!isOpen) return null;
 
   const validateEmail = (val) => {
     return /\S+@\S+\.\S+/.test(val);
