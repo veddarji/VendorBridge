@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from './components/Navbar.jsx';
 import HeroSection from './components/HeroSection.jsx';
 import Features from './components/Features.jsx';
 import InteractiveWorkflow from './components/InteractiveWorkflow.jsx';
 import RoleSimulator from './components/RoleSimulator.jsx';
 import AnalyticsPreview from './components/AnalyticsPreview.jsx';
-import LoginModal from './components/LoginModal.jsx';
+import { ToastContainer } from './components/Toast';
 
 // Import all Console Views
 import {
@@ -21,13 +21,72 @@ import {
 } from './components/ConsoleViews.jsx';
 
 import './App.css';
+import './Auth.css';
+
+const ROLES = [
+  { id: 'officer', name: 'Procurement Officer' },
+  { id: 'vendor', name: 'Vendor' },
+  { id: 'approver', name: 'Manager / Approver' },
+  { id: 'admin', name: 'Admin' },
+];
 
 function App() {
   // Navigation & Screen States
-  const [isDemoActive, setIsDemoActive] = useState(false);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [userRole, setUserRole] = useState('procurement_officer'); // procurement_officer, vendor, manager, admin
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const savedSession = localStorage.getItem('currentUser');
+      return savedSession ? JSON.parse(savedSession) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [view, setView] = useState(() => {
+    try {
+      const savedSession = localStorage.getItem('currentUser');
+      return savedSession ? 'dashboard' : 'landing'; // Default to landing if not logged in
+    } catch {
+      return 'landing';
+    }
+  });
+
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
+  const [toasts, setToasts] = useState([]);
   const [consoleTab, setConsoleTab] = useState('dashboard'); // dashboard, vendors, rfqs, quotes, compare, approvals, pos, logs, analytics
+
+  // Map officer/approver role ids to their simulated view names
+  const getMappedRole = (role) => {
+    if (role === 'officer') return 'procurement_officer';
+    if (role === 'approver') return 'manager';
+    return role || 'procurement_officer';
+  };
+
+  // Auth Form State
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginPhoto, setLoginPhoto] = useState(null);
+
+  // Registration Form State
+  const [regFirstName, setRegFirstName] = useState('');
+  const [regLastName, setRegLastName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPhone, setRegPhone] = useState('');
+  const [regRole, setRegRole] = useState('officer');
+  const [regCountry, setRegCountry] = useState('');
+  const [regInfo, setRegInfo] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regConfirmPassword, setRegConfirmPassword] = useState('');
+  const [regPhoto, setRegPhoto] = useState(null);
+
+  // Photo capture/upload states
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [photoModalContext, setPhotoModalContext] = useState('register'); // 'login' | 'register'
+  const [cameraMode, setCameraMode] = useState(false);
+  const [cameraStream, setCameraStream] = useState(null);
+
+  // Modal / Forgot Password state
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
 
   // ==========================================
   // SHARED STATE ENGINE (SIMULATED DATABASE)
@@ -76,6 +135,65 @@ function App() {
     remarks: 'Approved based on best pricing bid and delivery timeline.',
   });
 
+  // Initialize DB on mount
+  useEffect(() => {
+    if (!localStorage.getItem('users')) {
+      const defaultUsers = [
+        {
+          firstName: 'Demo',
+          lastName: 'Officer',
+          email: 'officer@vendorbridge.com',
+          password: 'password123',
+          role: 'officer',
+          country: 'United States',
+          phone: '+1 555-0199',
+          additionalInfo: 'Default procurement admin',
+          photo: null,
+        },
+        {
+          firstName: 'Global',
+          lastName: 'Suppliers',
+          email: 'vendor@vendorbridge.com',
+          password: 'password123',
+          role: 'vendor',
+          country: 'Canada',
+          phone: '+1 555-0233',
+          additionalInfo: 'Corporate Vendor',
+          photo: null,
+        },
+        {
+          firstName: 'Sarah',
+          lastName: 'Executive',
+          email: 'approver@vendorbridge.com',
+          password: 'password123',
+          role: 'approver',
+          country: 'United Kingdom',
+          phone: '+44 20 7946 0958',
+          additionalInfo: 'Managerial sign-off',
+          photo: null,
+        },
+        {
+          firstName: 'Admin',
+          lastName: 'System',
+          email: 'admin@vendorbridge.com',
+          password: 'password123',
+          role: 'admin',
+          country: 'India',
+          phone: '+91 98765 43210',
+          additionalInfo: 'ERP Super Administrator',
+          photo: null,
+        },
+      ];
+      localStorage.setItem('users', JSON.stringify(defaultUsers));
+    }
+  }, []);
+
+  // Sync theme attribute with document root
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
   // Action log dispatcher helper
   const addLog = (role, action) => {
     const now = new Date();
@@ -87,52 +205,350 @@ function App() {
     setConsoleTab(tab);
   };
 
+  const handleLoginEmailChange = (val) => {
+    setLoginEmail(val);
+    if (val) {
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const matchedUser = users.find((u) => u.email.toLowerCase() === val.toLowerCase());
+      if (matchedUser && matchedUser.photo) {
+        setLoginPhoto(matchedUser.photo);
+      } else {
+        setLoginPhoto(null);
+      }
+    } else {
+      setLoginPhoto(null);
+    }
+  };
+
+  // Toast helpers
+  const addToast = (message, type = 'success') => {
+    const id = Date.now().toString();
+    setToasts((prev) => [...prev, { id, message, type }]);
+  };
+
+  const removeToast = (id) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  };
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
+  // Photo helpers
+  const openPhotoModal = (context) => {
+    setPhotoModalContext(context);
+    setShowPhotoModal(true);
+  };
+
+  const closePhotoModal = () => {
+    stopCamera();
+    setShowPhotoModal(false);
+  };
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 320, height: 240 },
+      });
+      setCameraStream(stream);
+      setCameraMode(true);
+      setTimeout(() => {
+        const video = document.getElementById('camera-video');
+        if (video) {
+          video.srcObject = stream;
+        }
+      }, 100);
+    } catch {
+      addToast('Could not access camera. Please upload a file instead.', 'error');
+      setCameraMode(false);
+    }
+  };
+
+  const stopCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach((track) => track.stop());
+      setCameraStream(null);
+    }
+    setCameraMode(false);
+  };
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (photoModalContext === 'register') {
+          setRegPhoto(reader.result);
+        } else {
+          setLoginPhoto(reader.result);
+        }
+        addToast('Photo uploaded successfully!', 'success');
+        closePhotoModal();
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const captureSnapshot = () => {
+    const video = document.getElementById('camera-video');
+    if (video) {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 320;
+      canvas.height = video.videoHeight || 240;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg');
+
+      if (photoModalContext === 'register') {
+        setRegPhoto(dataUrl);
+      } else {
+        setLoginPhoto(dataUrl);
+      }
+      addToast('Snapshot captured successfully!', 'success');
+      closePhotoModal();
+    }
+  };
+
+  // Form Handlers
+  const handleLoginSubmit = (e) => {
+    e.preventDefault();
+
+    if (!loginEmail || !loginPassword) {
+      addToast('Please fill in all credentials.', 'error');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(loginEmail)) {
+      addToast('Please enter a valid email address.', 'error');
+      return;
+    }
+
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const matchedUser = users.find(
+      (u) => u.email.toLowerCase() === loginEmail.toLowerCase() && u.password === loginPassword,
+    );
+
+    if (matchedUser) {
+      addToast(`Welcome back, ${matchedUser.firstName}!`, 'success');
+      setCurrentUser(matchedUser);
+      localStorage.setItem('currentUser', JSON.stringify(matchedUser));
+      setView('dashboard');
+      addLog(matchedUser.role, 'Successfully signed into the ERP console.');
+    } else {
+      addToast(
+        'Invalid email or password. Try demo accounts (e.g. officer@vendorbridge.com / password123)',
+        'error',
+      );
+    }
+  };
+
+  const handleRegisterSubmit = (e) => {
+    e.preventDefault();
+
+    // STRICT VALIDATION: Check that absolutely no field is empty
+    if (
+      !regFirstName.trim() ||
+      !regLastName.trim() ||
+      !regEmail.trim() ||
+      !regPhone.trim() ||
+      !regCountry.trim() ||
+      !regPassword.trim() ||
+      !regConfirmPassword.trim() ||
+      !regInfo.trim()
+    ) {
+      addToast('All text entries are required. Please fill in all fields.', 'error');
+      return;
+    }
+
+    if (!regPhoto) {
+      addToast('Profile photo is required. Please upload or capture a photo.', 'error');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(regEmail)) {
+      addToast('Please enter a valid email address.', 'error');
+      return;
+    }
+
+    if (regPassword.length < 6) {
+      addToast('Password must be at least 6 characters long.', 'error');
+      return;
+    }
+
+    if (regPassword !== regConfirmPassword) {
+      addToast('Passwords do not match.', 'error');
+      return;
+    }
+
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    if (users.some((u) => u.email.toLowerCase() === regEmail.toLowerCase())) {
+      addToast('This email is already registered.', 'error');
+      return;
+    }
+
+    const newUser = {
+      firstName: regFirstName,
+      lastName: regLastName,
+      email: regEmail,
+      phone: regPhone,
+      role: regRole,
+      country: regCountry,
+      additionalInfo: regInfo,
+      password: regPassword,
+      photo: regPhoto,
+    };
+
+    const updatedUsers = [...users, newUser];
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
+
+    addToast('Account created successfully! You can now log in.', 'success');
+
+    // Clear registration fields
+    setRegFirstName('');
+    setRegLastName('');
+    setRegEmail('');
+    setRegPhone('');
+    setRegCountry('');
+    setRegInfo('');
+    setRegPassword('');
+    setRegConfirmPassword('');
+    setRegPhoto(null);
+
+    setView('login');
+  };
+
+  const handleForgotSubmit = (e) => {
+    e.preventDefault();
+    if (!forgotEmail) {
+      addToast('Please enter your email address.', 'error');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(forgotEmail)) {
+      addToast('Please enter a valid email address.', 'error');
+      return;
+    }
+
+    addToast(`Password recovery link has been sent to ${forgotEmail}`, 'warning');
+    setShowForgotModal(false);
+    setForgotEmail('');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('currentUser');
+    setCurrentUser(null);
+    setView('landing');
+    addToast('Logged out successfully.', 'success');
+  };
+
   return (
-    <div className="app-container">
-      {/* ---------------------------------------------------- */}
-      {/* CONDITIONAL RENDER: LANDING PAGE VS ERP CONSOLE */}
-      {/* ---------------------------------------------------- */}
-      {!isDemoActive ? (
+    <>
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
+
+      {/* Theme Switcher Toggle */}
+      <button
+        type="button"
+        className="theme-toggle"
+        onClick={toggleTheme}
+        aria-label="Toggle visual theme"
+        title="Toggle dark/light theme"
+      >
+        {theme === 'dark' ? (
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        ) : (
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        )}
+      </button>
+
+      {/* Routing Controller */}
+      {view === 'landing' && (
         <div className="landing-page">
-          {/* Header/Navbar */}
           <Navbar 
-            onOpenLogin={() => setIsLoginModalOpen(true)} 
+            onOpenLogin={() => setView('login')} 
             onLaunchDemo={() => {
-              setIsDemoActive(true);
+              const demoUser = {
+                firstName: 'Demo',
+                lastName: 'Officer',
+                email: 'officer@vendorbridge.com',
+                role: 'officer',
+                country: 'India',
+                phone: '+91 99999 99999',
+                additionalInfo: 'Simulated Demo Account',
+                photo: null
+              };
+              setCurrentUser(demoUser);
+              setView('dashboard');
               addLog('system', 'User entered interactive ERP Demo Console.');
             }}
           />
 
-          {/* Hero Section */}
           <HeroSection 
-            onOpenLogin={() => setIsLoginModalOpen(true)} 
+            onOpenLogin={() => setView('login')} 
             onLaunchDemo={() => {
-              setIsDemoActive(true);
+              const demoUser = {
+                firstName: 'Demo',
+                lastName: 'Officer',
+                email: 'officer@vendorbridge.com',
+                role: 'officer',
+                country: 'India',
+                phone: '+91 99999 99999',
+                additionalInfo: 'Simulated Demo Account',
+                photo: null
+              };
+              setCurrentUser(demoUser);
+              setView('dashboard');
               addLog('system', 'User entered interactive ERP Demo Console.');
             }}
           />
 
-          {/* Core Feature Grid */}
           <div id="features">
             <Features />
           </div>
 
-          {/* Stepper Pipeline Walkthrough */}
           <div id="workflow">
             <InteractiveWorkflow />
           </div>
 
-          {/* Role Simulators */}
           <div id="roles">
             <RoleSimulator />
           </div>
 
-          {/* Analytics Overview Section */}
           <div id="analytics">
             <AnalyticsPreview />
           </div>
 
-          {/* Footer */}
           <footer className="landing-footer">
             <div className="container">
               <div className="footer-links">
@@ -146,22 +562,294 @@ function App() {
               </p>
             </div>
           </footer>
-
-          {/* Login/Signup Modal */}
-          <LoginModal 
-            isOpen={isLoginModalOpen} 
-            onClose={() => setIsLoginModalOpen(false)} 
-            onLoginSuccess={(role) => {
-              setUserRole(role);
-              setIsDemoActive(true);
-              addLog(role, 'Successfully signed into the ERP console.');
-            }}
-          />
         </div>
-      ) : (
-        /* ---------------------------------------------------- */
-        /* CONSOLE APPLICATION CONTAINER */
-        /* ---------------------------------------------------- */
+      )}
+
+      {view === 'login' && (
+        <div className="auth-page animate-fade-in">
+          <div className="auth-card">
+            <h2 style={{ fontSize: '1.8rem', marginBottom: '8px', color: 'var(--text-primary)' }}>Sign In</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '24px' }}>
+              Access the VendorBridge Procurement ERP console.
+            </p>
+
+            {/* Interactive Photo Circle */}
+            <div className="photo-circle-placeholder" onClick={() => openPhotoModal('login')}>
+              {loginPhoto ? (
+                <img src={loginPhoto} className="photo-circle-img" alt="Profile" />
+              ) : (
+                <span>Photo</span>
+              )}
+              <div className="photo-hover-overlay">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                  <circle cx="12" cy="13" r="4"></circle>
+                </svg>
+                <span>Edit</span>
+              </div>
+            </div>
+
+            <form onSubmit={handleLoginSubmit}>
+              <div className="form-group">
+                <label htmlFor="login-email">Username / Email</label>
+                <input
+                  id="login-email"
+                  type="email"
+                  placeholder="name@company.com"
+                  value={loginEmail}
+                  onChange={(e) => handleLoginEmailChange(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="login-password">Password</label>
+                <input
+                  id="login-password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="login-action-container">
+                <button type="submit" className="btn-primary" style={{ width: '100%' }}>
+                  Log in to ERP
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div className="auth-view-switcher">
+            Don't have an account?{' '}
+            <a
+              href="#register"
+              onClick={(e) => {
+                e.preventDefault();
+                setView('register');
+              }}
+            >
+              Register
+            </a>{' '}
+            |{' '}
+            <a
+              href="#forgot-password"
+              onClick={(e) => {
+                e.preventDefault();
+                setShowForgotModal(true);
+              }}
+            >
+              Forgot Password
+            </a>{' '}
+            |{' '}
+            <a
+              href="#back-landing"
+              onClick={(e) => {
+                e.preventDefault();
+                setView('landing');
+              }}
+            >
+              Back to Landing Page
+            </a>
+          </div>
+        </div>
+      )}
+
+      {view === 'register' && (
+        <div className="auth-page animate-fade-in">
+          <div className="auth-card register-card">
+            <h2 style={{ fontSize: '1.8rem', marginBottom: '8px', color: 'var(--text-primary)' }}>Supplier / User Registration</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '20px' }}>
+              Create an authenticated profile on the VendorBridge ERP.
+            </p>
+
+            {/* Interactive Photo Circle */}
+            <div className="photo-circle-placeholder" onClick={() => openPhotoModal('register')}>
+              {regPhoto ? (
+                <img src={regPhoto} className="photo-circle-img" alt="Profile" />
+              ) : (
+                <span>Photo</span>
+              )}
+              <div className="photo-hover-overlay">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                  <circle cx="12" cy="13" r="4"></circle>
+                </svg>
+                <span>Select</span>
+              </div>
+            </div>
+
+            <form id="register-form" onSubmit={handleRegisterSubmit}>
+              <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div className="form-group">
+                  <label htmlFor="reg-firstname">First Name</label>
+                  <input
+                    id="reg-firstname"
+                    type="text"
+                    placeholder="First Name"
+                    value={regFirstName}
+                    onChange={(e) => setRegFirstName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="reg-lastname">Last Name</label>
+                  <input
+                    id="reg-lastname"
+                    type="text"
+                    placeholder="Last Name"
+                    value={regLastName}
+                    onChange={(e) => setRegLastName(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '12px' }}>
+                <div className="form-group">
+                  <label htmlFor="reg-email">Email Address</label>
+                  <input
+                    id="reg-email"
+                    type="email"
+                    placeholder="Email Address"
+                    value={regEmail}
+                    onChange={(e) => setRegEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="reg-phone">Phone Number</label>
+                  <input
+                    id="reg-phone"
+                    type="tel"
+                    placeholder="Phone Number"
+                    value={regPhone}
+                    onChange={(e) => setRegPhone(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '12px' }}>
+                <div className="form-group">
+                  <label htmlFor="reg-role">Job Role</label>
+                  <select
+                    id="reg-role"
+                    value={regRole}
+                    onChange={(e) => setRegRole(e.target.value)}
+                    required
+                  >
+                    <option value="officer">Procurement Officer</option>
+                    <option value="vendor">Vendor Supplier</option>
+                    <option value="approver">Manager / Approver</option>
+                    <option value="admin">Administrator</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="reg-country">Country</label>
+                  <input
+                    id="reg-country"
+                    type="text"
+                    placeholder="Country"
+                    value={regCountry}
+                    onChange={(e) => setRegCountry(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '12px' }}>
+                <div className="form-group">
+                  <label htmlFor="reg-password">Password</label>
+                  <input
+                    id="reg-password"
+                    type="password"
+                    placeholder="Password"
+                    value={regPassword}
+                    onChange={(e) => setRegPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="reg-confirm-password">Confirm Password</label>
+                  <input
+                    id="reg-confirm-password"
+                    type="password"
+                    placeholder="Confirm Password"
+                    value={regConfirmPassword}
+                    onChange={(e) => setRegConfirmPassword(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-group" style={{ marginTop: '12px' }}>
+                <label htmlFor="reg-info">Additional Corporate Information</label>
+                <textarea
+                  id="reg-info"
+                  placeholder="Tell us about your organization..."
+                  value={regInfo}
+                  onChange={(e) => setRegInfo(e.target.value)}
+                  rows="3"
+                  required
+                />
+              </div>
+            </form>
+          </div>
+
+          {/* Register button situated outside the card container matching mockup */}
+          <div className="register-action-container" style={{ marginTop: '20px', textAlign: 'center' }}>
+            <button type="submit" form="register-form" className="btn-primary" style={{ width: '100%', maxWidth: '460px' }}>
+              Register Account
+            </button>
+          </div>
+
+          <div className="auth-view-switcher" style={{ marginTop: '16px' }}>
+            Already have an account?{' '}
+            <a
+              href="#login"
+              onClick={(e) => {
+                e.preventDefault();
+                setView('login');
+              }}
+            >
+              Sign in
+            </a>{' '}
+            |{' '}
+            <a
+              href="#back-landing"
+              onClick={(e) => {
+                e.preventDefault();
+                setView('landing');
+              }}
+            >
+              Back to Landing Page
+            </a>
+          </div>
+        </div>
+      )}
+
+      {view === 'dashboard' && (
         <div className="erp-console animate-fade-in">
           {/* Sidebar */}
           <aside className="erp-sidebar">
@@ -233,15 +921,29 @@ function App() {
 
             {/* User Profile Info Widget */}
             <div className="user-profile-widget">
-              <div className="user-avatar">
-                {userRole === 'procurement_officer' ? 'PO' : userRole === 'vendor' ? 'VE' : userRole === 'manager' ? 'MA' : 'AD'}
-              </div>
+              {currentUser?.photo ? (
+                <img
+                  src={currentUser.photo}
+                  alt="Avatar"
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: '1.5px solid var(--accent)',
+                  }}
+                />
+              ) : (
+                <div className="user-avatar">
+                  {currentUser?.firstName?.substring(0, 1)}{currentUser?.lastName?.substring(0, 1)}
+                </div>
+              )}
               <div style={{ textAlign: 'left', overflow: 'hidden' }}>
                 <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text)', display: 'block' }}>
-                  {userRole === 'procurement_officer' ? 'Rohan Sharma' : userRole === 'vendor' ? 'Zenith Billing' : userRole === 'manager' ? 'Nikhil Verma' : 'System Admin'}
+                  {currentUser?.firstName} {currentUser?.lastName}
                 </span>
                 <span style={{ fontSize: '11px', color: 'var(--accent)', textTransform: 'capitalize' }}>
-                  {userRole.replace('_', ' ')}
+                  {getMappedRole(currentUser?.role).replace('_', ' ')}
                 </span>
               </div>
             </div>
@@ -278,13 +980,10 @@ function App() {
                   padding: '4px 12px',
                   fontWeight: '600',
                 }}>
-                  ACTIVE ROLE: {userRole.toUpperCase()}
+                  ACTIVE ROLE: {getMappedRole(currentUser?.role).toUpperCase()}
                 </div>
                 <button
-                  onClick={() => {
-                    setIsDemoActive(false);
-                    addLog('system', 'User exited interactive ERP Console and returned to the Landing Page.');
-                  }}
+                  onClick={handleLogout}
                   style={{
                     backgroundColor: 'rgba(255, 85, 85, 0.1)',
                     color: '#FF5555',
@@ -297,7 +996,7 @@ function App() {
                   onMouseEnter={e => e.target.style.backgroundColor = 'rgba(255, 85, 85, 0.2)'}
                   onMouseLeave={e => e.target.style.backgroundColor = 'rgba(255, 85, 85, 0.1)'}
                 >
-                  Exit Console
+                  Logout
                 </button>
               </div>
             </header>
@@ -311,7 +1010,7 @@ function App() {
                   quotes={quotes} 
                   auditLogs={auditLogs} 
                   onNavigate={handleNavigateConsole}
-                  userRole={userRole}
+                  userRole={getMappedRole(currentUser?.role)}
                 />
               )}
               {consoleTab === 'vendors' && (
@@ -377,7 +1076,172 @@ function App() {
           </main>
         </div>
       )}
-    </div>
+
+      {/* Forgot Password Modal */}
+      {showForgotModal && (
+        <div className="modal-overlay" onClick={() => setShowForgotModal(false)} style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(2, 12, 27, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+        }}>
+          <div className="glass-panel modal-content" onClick={(e) => e.stopPropagation()} style={{
+            padding: '30px',
+            borderRadius: 'var(--radius-lg)',
+            width: '100%',
+            maxWidth: '440px',
+            border: '1px solid var(--border)',
+          }}>
+            <div className="modal-header" style={{ marginBottom: '20px' }}>
+              <h4 style={{ fontSize: '1.2rem', color: 'var(--text-primary)' }}>Reset Password</h4>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '4px' }}>
+                Enter your email and we'll send you a recovery link.
+              </p>
+            </div>
+            <form onSubmit={handleForgotSubmit} className="erp-form">
+              <div className="form-group" style={{ marginBottom: '20px' }}>
+                <label htmlFor="forgot-email">Email Address</label>
+                <input
+                  id="forgot-email"
+                  type="email"
+                  placeholder="name@company.com"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="modal-actions" style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setShowForgotModal(false)}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary">
+                  Send Recovery Link
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Photo Picker Options & Webcam capture modal */}
+      {showPhotoModal && (
+        <div className="modal-overlay" onClick={closePhotoModal} style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(2, 12, 27, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+        }}>
+          <div className="glass-panel modal-content" onClick={(e) => e.stopPropagation()} style={{
+            padding: '30px',
+            borderRadius: 'var(--radius-lg)',
+            width: '100%',
+            maxWidth: '440px',
+            border: '1px solid var(--border)',
+          }}>
+            <div className="modal-header" style={{ marginBottom: '20px' }}>
+              <h4 style={{ fontSize: '1.2rem', color: 'var(--text-primary)' }}>Profile Picture</h4>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '4px' }}>
+                Select how you would like to assign your profile photo.
+              </p>
+            </div>
+
+            {!cameraMode ? (
+              <div className="photo-options-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <button
+                  type="button"
+                  className="photo-option-btn btn-secondary"
+                  style={{ width: '100%', padding: '14px', justifyContent: 'center' }}
+                  onClick={() => document.getElementById('photo-file-input')?.click()}
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ color: 'var(--primary)' }}
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                  <span style={{ marginLeft: '8px' }}>Upload from File</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="photo-option-btn btn-secondary"
+                  style={{ width: '100%', padding: '14px', justifyContent: 'center' }}
+                  onClick={startCamera}
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ color: 'var(--primary)' }}
+                  >
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                    <circle cx="12" cy="13" r="4"></circle>
+                  </svg>
+                  <span style={{ marginLeft: '8px' }}>Capture from Camera</span>
+                </button>
+
+                <input
+                  id="photo-file-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                  style={{ display: 'none' }}
+                />
+              </div>
+            ) : (
+              <div className="camera-preview-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                <video
+                  id="camera-video"
+                  className="camera-video"
+                  autoPlay
+                  playsInline
+                  muted
+                  style={{ width: '100%', maxWidth: '320px', height: '240px', borderRadius: 'var(--radius-md)', backgroundColor: '#000', transform: 'scaleX(-1)' }}
+                ></video>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button type="button" className="btn-secondary" onClick={stopCamera}>
+                    Back
+                  </button>
+                  <button type="button" className="btn-primary" onClick={captureSnapshot}>
+                    Capture
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="modal-actions" style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
+              <button type="button" className="btn-secondary" onClick={closePhotoModal}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
