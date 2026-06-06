@@ -15,6 +15,9 @@ import java.util.Collections;
  * Service to load user details for Spring Security validation.
  */
 @Service
+/**
+ * Class documentation.
+ */
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;

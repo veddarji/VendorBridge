@@ -94,29 +94,47 @@ export default function CreateRfq({ vendors, rfqs, setRfqs, addLog, onNavigate }
   };
 
   // Submit complete RFQ
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim() || !deadline || itemsList.length === 0 || selectedVendors.length === 0) {
       alert('Validation Error: Please specify RFQ Title, Deadline, at least 1 Item, and at least 1 Vendor.');
       return;
     }
 
-    const rfqId = `RFQ-2026-00${rfqs.length + 1}`;
-    const newRfq = {
-      id: rfqId,
+    const assignedVendor = selectedVendors.length === vendors.length ? 'all' : selectedVendors.join(', ');
+
+    const newRfqPayload = {
       title: title.trim(),
       description,
-      qty: itemsList.reduce((sum, item) => sum + item.qty, 0),
       deadline,
-      assignedVendor: selectedVendors.length === vendors.length ? 'all' : selectedVendors.join(', '),
-      status: 'Active',
-      quotesCount: 0,
+      assignedVendor,
+      items: itemsList
     };
 
-    setRfqs([newRfq, ...rfqs]);
-    addLog('procurement_officer', `Created RFQ ${rfqId}: "${title.trim()}" with ${itemsList.length} items`);
-    alert(`RFQ ${rfqId} has been successfully broadcast!`);
-    onNavigate('dashboard');
+    try {
+      const token = localStorage.getItem('jwt_token');
+      const response = await fetch('http://localhost:8081/api/rfqs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify(newRfqPayload)
+      });
+
+      if (response.ok) {
+        const savedRfq = await response.json();
+        setRfqs([savedRfq, ...rfqs]);
+        addLog('procurement_officer', `Created RFQ ${savedRfq.id}: "${savedRfq.title}" with ${itemsList.length} items`);
+        alert(`RFQ ${savedRfq.id} has been successfully broadcast!`);
+        onNavigate('dashboard');
+      } else {
+        alert('Failed to broadcast RFQ to the server.');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Error connecting to the RFQ API.');
+    }
   };
 
   return (

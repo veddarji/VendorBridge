@@ -10,6 +10,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+/**
+ * Class documentation.
+ */
 public class SignupRequest {
 
     private String firstName;

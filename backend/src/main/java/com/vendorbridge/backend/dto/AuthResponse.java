@@ -12,6 +12,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+/**
+ * Class documentation.
+ */
 public class AuthResponse {
 
     private String token;

@@ -17,6 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
  * Service class for handling login and registration operations.
  */
 @Service
+/**
+ * Class documentation.
+ */
 public class AuthService {
 
     private final UserRepository userRepository;

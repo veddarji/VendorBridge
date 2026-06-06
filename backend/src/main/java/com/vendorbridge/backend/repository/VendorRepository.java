@@ -19,4 +19,5 @@ public interface VendorRepository extends JpaRepository<Vendor, Long> {
      * @return optional containing vendor if found
      */
     Optional<Vendor> findByGstNumber(String gstNumber);
+    Optional<Vendor> findByCompanyName(String companyName);
 }

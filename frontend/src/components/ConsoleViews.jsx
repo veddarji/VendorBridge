@@ -429,7 +429,7 @@ export function ConsoleSubmitQuote({ rfqs, quotes, setQuotes, setRfqs, vendors, 
   const [leadTime, setLeadTime] = useState('');
   const [notes, setNotes] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!rfqId || !vendorName || !price || !leadTime) {
       alert('Please fill out all fields.');
@@ -439,33 +439,51 @@ export function ConsoleSubmitQuote({ rfqs, quotes, setQuotes, setRfqs, vendors, 
     const matchedRfq = rfqs.find(r => r.id === rfqId);
     if (!matchedRfq) return;
 
-    const newQuote = {
-      rfqId,
-      rfqTitle: matchedRfq.title,
-      vendorName,
-      price: parseFloat(price),
-      leadTime: parseInt(leadTime),
-      notes,
-    };
+    try {
+      const token = localStorage.getItem('jwt_token');
+      const response = await fetch('http://localhost:8081/api/quotes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify({
+          rfqId,
+          rfqTitle: matchedRfq.title,
+          vendorName,
+          price: parseFloat(price),
+          leadTime: parseInt(leadTime),
+          notes,
+        })
+      });
 
-    setQuotes([newQuote, ...quotes]);
+      if (response.ok) {
+        const savedQuote = await response.json();
+        setQuotes([savedQuote, ...quotes]);
 
-    // Update quote count on the RFQ
-    const updatedRfqs = rfqs.map(r => {
-      if (r.id === rfqId) {
-        return { ...r, quotesCount: (r.quotesCount || 0) + 1 };
+        // Update quote count on the RFQ
+        const updatedRfqs = rfqs.map(r => {
+          if (r.id === rfqId) {
+            return { ...r, quotesCount: (r.quotesCount || 0) + 1 };
+          }
+          return r;
+        });
+        setRfqs(updatedRfqs);
+
+        addLog('vendor', `Vendor "${vendorName}" submitted Quotation for ${rfqId} (Bid: ₹${parseFloat(price).toLocaleString()})`);
+        alert('Your quotation has been securely saved and submitted!');
+        
+        setPrice('');
+        setLeadTime('');
+        setNotes('');
+        onNavigate('dashboard');
+      } else {
+        alert('Failed to submit quote.');
       }
-      return r;
-    });
-    setRfqs(updatedRfqs);
-
-    addLog('vendor', `Vendor "${vendorName}" submitted Quotation for ${rfqId} (Bid: ₹${parseFloat(price).toLocaleString()})`);
-    alert('Your quotation has been securely saved and submitted!');
-    
-    setPrice('');
-    setLeadTime('');
-    setNotes('');
-    onNavigate('dashboard');
+    } catch (error) {
+      console.error(error);
+      alert('Error communicating with the Quotation API.');
+    }
   };
 
   return (

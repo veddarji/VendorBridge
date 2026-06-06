@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * Global exception handler to capture service exceptions and translate them to JSON.
  */
 @RestControllerAdvice
+/**
+ * Class documentation.
+ */
 public class GlobalExceptionHandler {
 
     /**

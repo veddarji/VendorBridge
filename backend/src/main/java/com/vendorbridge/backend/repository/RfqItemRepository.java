@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface RfqItemRepository extends JpaRepository<RfqItem, Long> {
+    java.util.List<RfqItem> findByRfqId(Long rfqId);
 }
