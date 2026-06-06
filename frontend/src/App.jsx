@@ -6,7 +6,7 @@ const ROLES = [
   { id: 'officer', name: 'Procurement Officer' },
   { id: 'vendor', name: 'Vendor' },
   { id: 'approver', name: 'Manager / Approver' },
-  { id: 'admin', name: 'Admin' }
+  { id: 'admin', name: 'Admin' },
 ];
 
 function App() {
@@ -31,12 +31,12 @@ function App() {
 
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
   const [toasts, setToasts] = useState([]);
-  
+
   // Auth Form State
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginPhoto, setLoginPhoto] = useState(null);
-  
+
   // Registration Form State
   const [regFirstName, setRegFirstName] = useState('');
   const [regLastName, setRegLastName] = useState('');
@@ -48,13 +48,13 @@ function App() {
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [regPhoto, setRegPhoto] = useState(null);
-  
+
   // Photo capture/upload states
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [photoModalContext, setPhotoModalContext] = useState('register'); // 'login' | 'register'
   const [cameraMode, setCameraMode] = useState(false);
   const [cameraStream, setCameraStream] = useState(null);
-  
+
   // Modal / Forgot Password state
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
@@ -72,7 +72,7 @@ function App() {
           country: 'United States',
           phone: '+1 555-0199',
           additionalInfo: 'Default procurement admin',
-          photo: null
+          photo: null,
         },
         {
           firstName: 'Global',
@@ -83,7 +83,7 @@ function App() {
           country: 'Canada',
           phone: '+1 555-0233',
           additionalInfo: 'Corporate Vendor',
-          photo: null
+          photo: null,
         },
         {
           firstName: 'Sarah',
@@ -94,7 +94,7 @@ function App() {
           country: 'United Kingdom',
           phone: '+44 20 7946 0958',
           additionalInfo: 'Managerial sign-off',
-          photo: null
+          photo: null,
         },
         {
           firstName: 'Admin',
@@ -105,8 +105,8 @@ function App() {
           country: 'India',
           phone: '+91 98765 43210',
           additionalInfo: 'ERP Super Administrator',
-          photo: null
-        }
+          photo: null,
+        },
       ];
       localStorage.setItem('users', JSON.stringify(defaultUsers));
     }
@@ -161,7 +161,7 @@ function App() {
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 320, height: 240 }
+        video: { width: 320, height: 240 },
       });
       setCameraStream(stream);
       setCameraMode(true);
@@ -211,7 +211,7 @@ function App() {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const dataUrl = canvas.toDataURL('image/jpeg');
-      
+
       if (photoModalContext === 'register') {
         setRegPhoto(dataUrl);
       } else {
@@ -239,7 +239,7 @@ function App() {
 
     const users = JSON.parse(localStorage.getItem('users') || '[]');
     const matchedUser = users.find(
-      (u) => u.email.toLowerCase() === loginEmail.toLowerCase() && u.password === loginPassword
+      (u) => u.email.toLowerCase() === loginEmail.toLowerCase() && u.password === loginPassword,
     );
 
     if (matchedUser) {
@@ -248,7 +248,10 @@ function App() {
       localStorage.setItem('currentUser', JSON.stringify(matchedUser));
       setView('dashboard');
     } else {
-      addToast('Invalid email or password. Try demo accounts (e.g. officer@vendorbridge.com / password123)', 'error');
+      addToast(
+        'Invalid email or password. Try demo accounts (e.g. officer@vendorbridge.com / password123)',
+        'error',
+      );
     }
   };
 
@@ -306,14 +309,14 @@ function App() {
       country: regCountry,
       additionalInfo: regInfo,
       password: regPassword,
-      photo: regPhoto
+      photo: regPhoto,
     };
 
     const updatedUsers = [...users, newUser];
     localStorage.setItem('users', JSON.stringify(updatedUsers));
 
     addToast('Account created successfully! You can now log in.', 'success');
-    
+
     // Clear registration fields
     setRegFirstName('');
     setRegLastName('');
@@ -324,7 +327,7 @@ function App() {
     setRegPassword('');
     setRegConfirmPassword('');
     setRegPhoto(null);
-    
+
     setView('login');
   };
 
@@ -357,15 +360,24 @@ function App() {
       <ToastContainer toasts={toasts} removeToast={removeToast} />
 
       {/* Theme Switcher Toggle */}
-      <button 
-        type="button" 
-        className="theme-toggle" 
-        onClick={toggleTheme} 
+      <button
+        type="button"
+        className="theme-toggle"
+        onClick={toggleTheme}
         aria-label="Toggle visual theme"
         title="Toggle dark/light theme"
       >
         {theme === 'dark' ? (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <circle cx="12" cy="12" r="5"></circle>
             <line x1="12" y1="1" x2="12" y2="3"></line>
             <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -377,7 +389,16 @@ function App() {
             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
           </svg>
         ) : (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
           </svg>
         )}
@@ -395,7 +416,16 @@ function App() {
                 <span>Photo</span>
               )}
               <div className="photo-hover-overlay">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                   <circle cx="12" cy="13" r="4"></circle>
                 </svg>
@@ -446,8 +476,8 @@ function App() {
               }}
             >
               Register
-            </a>
-            {' '}|{' '}
+            </a>{' '}
+            |{' '}
             <a
               href="#forgot-password"
               onClick={(e) => {
@@ -472,7 +502,16 @@ function App() {
                 <span>Photo</span>
               )}
               <div className="photo-hover-overlay">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                   <circle cx="12" cy="13" r="4"></circle>
                 </svg>
@@ -626,22 +665,46 @@ function App() {
             <div>
               <h2 style={{ fontSize: '2rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 {currentUser?.photo ? (
-                  <img src={currentUser.photo} alt="Avatar" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--primary)' }} />
+                  <img
+                    src={currentUser.photo}
+                    alt="Avatar"
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '2px solid var(--primary)',
+                    }}
+                  />
                 ) : (
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--primary)' }}>
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ color: 'var(--primary)' }}
+                  >
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                   </svg>
                 )}
                 <span style={{ marginLeft: '8px' }}>VendorBridge ERP</span>
               </h2>
               <p style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>
-                Connected as: <strong>{currentUser?.firstName} {currentUser?.lastName}</strong> ({currentUser?.email})
+                Connected as:{' '}
+                <strong>
+                  {currentUser?.firstName} {currentUser?.lastName}
+                </strong>{' '}
+                ({currentUser?.email})
               </p>
             </div>
-            
+
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <span className="user-role-tag">
-                {ROLES.find(r => r.id === currentUser?.role)?.name || currentUser?.role}
+                {ROLES.find((r) => r.id === currentUser?.role)?.name || currentUser?.role}
               </span>
               <button className="btn-secondary" onClick={handleLogout}>
                 Logout
@@ -652,8 +715,9 @@ function App() {
           <div style={{ marginBottom: '32px' }}>
             <h3 style={{ fontSize: '1.4rem', marginBottom: '8px' }}>Auth Flow Successful!</h3>
             <p style={{ color: 'var(--text-secondary)' }}>
-              You have authenticated successfully with local session persistence. In subsequent steps, we will build out full modules
-              for this dashboard interface based on your role privileges.
+              You have authenticated successfully with local session persistence. In subsequent
+              steps, we will build out full modules for this dashboard interface based on your role
+              privileges.
             </p>
           </div>
 
@@ -666,7 +730,9 @@ function App() {
             <div className="dashboard-card">
               <h4>Active Session State</h4>
               <div className="value">PERSISTENT</div>
-              <p className="desc">Refreshing the page keeps you logged in via secure local storage.</p>
+              <p className="desc">
+                Refreshing the page keeps you logged in via secure local storage.
+              </p>
             </div>
             <div className="dashboard-card">
               <h4>Mock Database Accounts</h4>
@@ -677,11 +743,27 @@ function App() {
             </div>
           </div>
 
-          <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '24px', borderRadius: 'var(--radius-lg)', border: '2px solid var(--border-light)' }}>
+          <div
+            style={{
+              backgroundColor: 'var(--bg-secondary)',
+              padding: '24px',
+              borderRadius: 'var(--radius-lg)',
+              border: '2px solid var(--border-light)',
+            }}
+          >
             <h4 style={{ marginBottom: '12px' }}>Your Profile Data</h4>
-            <div style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: '12px', fontSize: '0.95rem' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '150px 1fr',
+                gap: '12px',
+                fontSize: '0.95rem',
+              }}
+            >
               <span style={{ color: 'var(--text-muted)' }}>Full Name:</span>
-              <span>{currentUser?.firstName} {currentUser?.lastName}</span>
+              <span>
+                {currentUser?.firstName} {currentUser?.lastName}
+              </span>
               <span style={{ color: 'var(--text-muted)' }}>Email:</span>
               <span>{currentUser?.email}</span>
               <span style={{ color: 'var(--text-muted)' }}>Phone:</span>
@@ -716,7 +798,11 @@ function App() {
                 />
               </div>
               <div className="modal-actions">
-                <button type="button" className="btn-secondary" onClick={() => setShowForgotModal(false)}>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setShowForgotModal(false)}
+                >
                   Cancel
                 </button>
                 <button type="submit" className="btn-primary">
@@ -739,32 +825,48 @@ function App() {
 
             {!cameraMode ? (
               <div className="photo-options-list">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="photo-option-btn"
                   onClick={() => document.getElementById('photo-file-input')?.click()}
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--primary)' }}>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ color: 'var(--primary)' }}
+                  >
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                     <polyline points="17 8 12 3 7 8"></polyline>
                     <line x1="12" y1="3" x2="12" y2="15"></line>
                   </svg>
                   <span>Upload from File</span>
                 </button>
-                
-                <button 
-                  type="button" 
-                  className="photo-option-btn"
-                  onClick={startCamera}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--primary)' }}>
+
+                <button type="button" className="photo-option-btn" onClick={startCamera}>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ color: 'var(--primary)' }}
+                  >
                     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                     <circle cx="12" cy="13" r="4"></circle>
                   </svg>
                   <span>Capture from Camera</span>
                 </button>
-                
-                <input 
+
+                <input
                   id="photo-file-input"
                   type="file"
                   accept="image/*"
@@ -774,7 +876,13 @@ function App() {
               </div>
             ) : (
               <div className="camera-preview-container">
-                <video id="camera-video" className="camera-video" autoPlay playsInline muted></video>
+                <video
+                  id="camera-video"
+                  className="camera-video"
+                  autoPlay
+                  playsInline
+                  muted
+                ></video>
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <button type="button" className="btn-secondary" onClick={stopCamera}>
                     Back

@@ -27,7 +27,7 @@
   overflow: hidden;
 }
 
-:root[data-theme="light"] .toast {
+:root[data-theme='light'] .toast {
   background-color: rgba(255, 255, 255, 0.9);
   color: #0f172a;
   border: 1px solid rgba(0, 0, 0, 0.05);
@@ -88,7 +88,7 @@
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-:root[data-theme="light"] .toast-close:hover {
+:root[data-theme='light'] .toast-close:hover {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
