@@ -1,6 +1,27 @@
 import { useState, useEffect } from 'react';
-import './Auth.css';
+import Navbar from './components/Navbar.jsx';
+import HeroSection from './components/HeroSection.jsx';
+import Features from './components/Features.jsx';
+import InteractiveWorkflow from './components/InteractiveWorkflow.jsx';
+import RoleSimulator from './components/RoleSimulator.jsx';
+import AnalyticsPreview from './components/AnalyticsPreview.jsx';
 import { ToastContainer } from './components/Toast';
+
+// Import all Console Views
+import {
+  ConsoleDashboard,
+  ConsoleVendors,
+  ConsoleRFQs,
+  ConsoleSubmitQuote,
+  ConsoleCompare,
+  ConsoleApprovals,
+  ConsolePOs,
+  ConsoleLogs,
+  ConsoleAnalytics,
+} from './components/ConsoleViews.jsx';
+
+import './App.css';
+import './Auth.css';
 
 const ROLES = [
   { id: 'officer', name: 'Procurement Officer' },
@@ -10,7 +31,7 @@ const ROLES = [
 ];
 
 function App() {
-  // Lazy state initializers to prevent synchronous set-state inside useEffect
+  // Navigation & Screen States
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       const savedSession = localStorage.getItem('currentUser');
@@ -23,14 +44,22 @@ function App() {
   const [view, setView] = useState(() => {
     try {
       const savedSession = localStorage.getItem('currentUser');
-      return savedSession ? 'dashboard' : 'login';
+      return savedSession ? 'dashboard' : 'landing'; // Default to landing if not logged in
     } catch {
-      return 'login';
+      return 'landing';
     }
   });
 
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
   const [toasts, setToasts] = useState([]);
+  const [consoleTab, setConsoleTab] = useState('dashboard'); // dashboard, vendors, rfqs, quotes, compare, approvals, pos, logs, analytics
+
+  // Map officer/approver role ids to their simulated view names
+  const getMappedRole = (role) => {
+    if (role === 'officer') return 'procurement_officer';
+    if (role === 'approver') return 'manager';
+    return role || 'procurement_officer';
+  };
 
   // Auth Form State
   const [loginEmail, setLoginEmail] = useState('');
@@ -58,6 +87,53 @@ function App() {
   // Modal / Forgot Password state
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
+
+  // ==========================================
+  // SHARED STATE ENGINE (SIMULATED DATABASE)
+  // ==========================================
+  
+  // 1. Vendor Partners Directory State
+  const [vendors, setVendors] = useState([
+    { name: 'Apex Industries Ltd', category: 'Manufacturing', gst: '29AAACA5481M1Z3', email: 'billing@apexindustries.com', rating: '4.8/5.0', status: 'Active' },
+    { name: 'Zenith Tech Solutions', category: 'IT Services', gst: '29AABBB8490C1ZH', email: 'sales@zenithtech.com', rating: '4.2/5.0', status: 'Active' },
+    { name: 'SolarTech Energy Corp', category: 'Utilities', gst: '29AACCC4120D2Z1', email: 'contracts@solartech.com', rating: '4.5/5.0', status: 'Active' },
+  ]);
+
+  // 2. Broadcasted RFQs State
+  const [rfqs, setRfqs] = useState([
+    { id: 'RFQ-2026-003', title: 'Enterprise Server Upgrade', description: 'Procure 15 heavy duty server rack units with fan grids.', qty: 15, deadline: '2026-06-18', assignedVendor: 'Zenith Tech Solutions', status: 'Active', quotesCount: 1 },
+    { id: 'RFQ-2026-002', title: 'Facility LED Installations', description: 'Re-bulb corporate hub floor 3 with power-saving LEDs.', qty: 120, deadline: '2026-06-15', assignedVendor: 'all', status: 'Awaiting Approval', selectedVendor: 'SolarTech Energy Corp', selectedBid: 85000, selectedLeadTime: 5, quotesCount: 2 },
+    { id: 'RFQ-2026-001', title: 'Office Supplies Q1 Contract', description: 'Regular paper, printing cartridges, and desk kits.', qty: 500, deadline: '2026-05-30', assignedVendor: 'all', status: 'Approved', selectedVendor: 'Apex Industries Ltd', selectedBid: 12400, selectedLeadTime: 7, quotesCount: 3 },
+  ]);
+
+  // 3. Submitted Quotation Bids State
+  const [quotes, setQuotes] = useState([
+    { rfqId: 'RFQ-2026-003', rfqTitle: 'Enterprise Server Upgrade', vendorName: 'Zenith Tech Solutions', price: 420000, leadTime: 10, notes: 'Includes 3 years on-site hardware support.' },
+    { rfqId: 'RFQ-2026-002', rfqTitle: 'Facility LED Installations', vendorName: 'SolarTech Energy Corp', price: 85000, leadTime: 5, notes: 'Includes free installation and certificates.' },
+    { rfqId: 'RFQ-2026-002', rfqTitle: 'Facility LED Installations', vendorName: 'Zenith Tech Solutions', price: 92000, leadTime: 7, notes: 'Fittings only, warranties are additional.' },
+    { rfqId: 'RFQ-2026-001', rfqTitle: 'Office Supplies Q1 Contract', vendorName: 'Apex Industries Ltd', price: 12400, leadTime: 7, notes: '100% recycled paper sheets.' },
+  ]);
+
+  // 4. Chronological Audit Logs State
+  const [auditLogs, setAuditLogs] = useState([
+    { time: '11:15 AM', role: 'system', action: 'Database backup synchronized.' },
+    { time: '11:02 AM', role: 'admin', action: 'Accredited Apex Industries Ltd.' },
+    { time: '10:48 AM', role: 'procurement_officer', action: 'Issued Purchase Order PO-2026-9801 to Apex Industries.' },
+    { time: '10:30 AM', role: 'manager', action: 'Approved RFQ-2026-001.' },
+    { time: '10:15 AM', role: 'vendor', action: 'Submitted Bid Quote for RFQ-2026-001.' },
+  ]);
+
+  // 5. Active PO/Invoice Sheet Data State
+  const [poData, setPoData] = useState({
+    poNumber: 'PO-2026-9801',
+    rfqId: 'RFQ-2026-001',
+    title: 'Office Supplies Q1 Contract',
+    vendor: 'Apex Industries Ltd',
+    amount: 12400,
+    qty: 500,
+    leadTime: 7,
+    remarks: 'Approved based on best pricing bid and delivery timeline.',
+  });
 
   // Initialize DB on mount
   useEffect(() => {
@@ -117,6 +193,17 @@ function App() {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
+
+  // Action log dispatcher helper
+  const addLog = (role, action) => {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    setAuditLogs((prev) => [{ time: timeStr, role, action }, ...prev]);
+  };
+
+  const handleNavigateConsole = (tab) => {
+    setConsoleTab(tab);
+  };
 
   const handleLoginEmailChange = (val) => {
     setLoginEmail(val);
@@ -279,6 +366,7 @@ function App() {
           localStorage.setItem('users', JSON.stringify(localUsers));
         }
         setView('dashboard');
+        addLog(data.role, 'Successfully signed into the ERP console.');
       })
       .catch((err) => {
         addToast(err.message, 'error');
@@ -411,7 +499,7 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem('currentUser');
     setCurrentUser(null);
-    setView('login');
+    setView('landing');
     addToast('Logged out successfully.', 'success');
   };
 
@@ -465,9 +553,86 @@ function App() {
       </button>
 
       {/* Routing Controller */}
+      {view === 'landing' && (
+        <div className="landing-page">
+          <Navbar 
+            onOpenLogin={() => setView('login')} 
+            onLaunchDemo={() => {
+              const demoUser = {
+                firstName: 'Demo',
+                lastName: 'Officer',
+                email: 'officer@vendorbridge.com',
+                role: 'officer',
+                country: 'India',
+                phone: '+91 99999 99999',
+                additionalInfo: 'Simulated Demo Account',
+                photo: null
+              };
+              setCurrentUser(demoUser);
+              setView('dashboard');
+              addLog('system', 'User entered interactive ERP Demo Console.');
+            }}
+          />
+
+          <HeroSection 
+            onOpenLogin={() => setView('login')} 
+            onLaunchDemo={() => {
+              const demoUser = {
+                firstName: 'Demo',
+                lastName: 'Officer',
+                email: 'officer@vendorbridge.com',
+                role: 'officer',
+                country: 'India',
+                phone: '+91 99999 99999',
+                additionalInfo: 'Simulated Demo Account',
+                photo: null
+              };
+              setCurrentUser(demoUser);
+              setView('dashboard');
+              addLog('system', 'User entered interactive ERP Demo Console.');
+            }}
+          />
+
+          <div id="features">
+            <Features />
+          </div>
+
+          <div id="workflow">
+            <InteractiveWorkflow />
+          </div>
+
+          <div id="roles">
+            <RoleSimulator />
+          </div>
+
+          <div id="analytics">
+            <AnalyticsPreview />
+          </div>
+
+          <footer className="landing-footer">
+            <div className="container">
+              <div className="footer-links">
+                <a href="#features" className="footer-link">Features</a>
+                <a href="#workflow" className="footer-link">Workflow</a>
+                <a href="#roles" className="footer-link">Roles</a>
+                <a href="#analytics" className="footer-link">Analytics</a>
+              </div>
+              <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
+                &copy; {new Date().getFullYear()} VendorBridge ERP. All rights reserved. Created for Next-Gen Procurement Operations.
+              </p>
+            </div>
+          </footer>
+        </div>
+      )}
+
       {view === 'login' && (
-        <div className="auth-page">
+        <div className="auth-page animate-fade-in">
           <div className="auth-card">
+            <h2 style={{ fontSize: '1.8rem', marginBottom: '8px', color: 'var(--text-primary)' }}>Sign In</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '24px' }}>
+              Access the VendorBridge Procurement ERP console.
+            </p>
+
             {/* Interactive Photo Circle */}
             <div className="photo-circle-placeholder" onClick={() => openPhotoModal('login')}>
               {loginPhoto ? (
@@ -495,7 +660,7 @@ function App() {
 
             <form onSubmit={handleLoginSubmit}>
               <div className="form-group">
-                <label htmlFor="login-email">Username</label>
+                <label htmlFor="login-email">Username / Email</label>
                 <input
                   id="login-email"
                   type="email"
@@ -519,8 +684,8 @@ function App() {
               </div>
 
               <div className="login-action-container">
-                <button type="submit" className="btn-sketch-outline">
-                  Log in
+                <button type="submit" className="btn-primary" style={{ width: '100%' }}>
+                  Log in to ERP
                 </button>
               </div>
             </form>
@@ -546,14 +711,29 @@ function App() {
               }}
             >
               Forgot Password
+            </a>{' '}
+            |{' '}
+            <a
+              href="#back-landing"
+              onClick={(e) => {
+                e.preventDefault();
+                setView('landing');
+              }}
+            >
+              Back to Landing Page
             </a>
           </div>
         </div>
       )}
 
       {view === 'register' && (
-        <div className="auth-page">
+        <div className="auth-page animate-fade-in">
           <div className="auth-card register-card">
+            <h2 style={{ fontSize: '1.8rem', marginBottom: '8px', color: 'var(--text-primary)' }}>Supplier / User Registration</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '20px' }}>
+              Create an authenticated profile on the VendorBridge ERP.
+            </p>
+
             {/* Interactive Photo Circle */}
             <div className="photo-circle-placeholder" onClick={() => openPhotoModal('register')}>
               {regPhoto ? (
@@ -580,7 +760,7 @@ function App() {
             </div>
 
             <form id="register-form" onSubmit={handleRegisterSubmit}>
-              <div className="form-row">
+              <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div className="form-group">
                   <label htmlFor="reg-firstname">First Name</label>
                   <input
@@ -605,7 +785,7 @@ function App() {
                 </div>
               </div>
 
-              <div className="form-row">
+              <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '12px' }}>
                 <div className="form-group">
                   <label htmlFor="reg-email">Email Address</label>
                   <input
@@ -630,19 +810,19 @@ function App() {
                 </div>
               </div>
 
-              <div className="form-row">
+              <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '12px' }}>
                 <div className="form-group">
-                  <label htmlFor="reg-role">Job (admin, officer)</label>
+                  <label htmlFor="reg-role">Job Role</label>
                   <select
                     id="reg-role"
                     value={regRole}
                     onChange={(e) => setRegRole(e.target.value)}
                     required
                   >
-                    <option value="officer">officer</option>
-                    <option value="admin">admin</option>
-                    <option value="vendor">vendor</option>
-                    <option value="approver">approver</option>
+                    <option value="officer">Procurement Officer</option>
+                    <option value="vendor">Vendor Supplier</option>
+                    <option value="approver">Manager / Approver</option>
+                    <option value="admin">Administrator</option>
                   </select>
                 </div>
                 <div className="form-group">
@@ -658,7 +838,7 @@ function App() {
                 </div>
               </div>
 
-              <div className="form-row">
+              <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '12px' }}>
                 <div className="form-group">
                   <label htmlFor="reg-password">Password</label>
                   <input
@@ -683,11 +863,11 @@ function App() {
                 </div>
               </div>
 
-              <div className="form-group">
-                <label htmlFor="reg-info">Additional Information ....</label>
+              <div className="form-group" style={{ marginTop: '12px' }}>
+                <label htmlFor="reg-info">Additional Corporate Information</label>
                 <textarea
                   id="reg-info"
-                  placeholder="Additional Information ...."
+                  placeholder="Tell us about your organization..."
                   value={regInfo}
                   onChange={(e) => setRegInfo(e.target.value)}
                   rows="3"
@@ -697,10 +877,10 @@ function App() {
             </form>
           </div>
 
-          {/* Register button is situated OUTSIDE the card container strictly matching mockup */}
-          <div className="register-action-container">
-            <button type="submit" form="register-form" className="btn-sketch-outline">
-              Register
+          {/* Register button situated outside the card container matching mockup */}
+          <div className="register-action-container" style={{ marginTop: '20px', textAlign: 'center' }}>
+            <button type="submit" form="register-form" className="btn-primary" style={{ width: '100%', maxWidth: '460px' }}>
+              Register Account
             </button>
           </div>
 
@@ -714,138 +894,274 @@ function App() {
               }}
             >
               Sign in
+            </a>{' '}
+            |{' '}
+            <a
+              href="#back-landing"
+              onClick={(e) => {
+                e.preventDefault();
+                setView('landing');
+              }}
+            >
+              Back to Landing Page
             </a>
           </div>
         </div>
       )}
 
       {view === 'dashboard' && (
-        <div className="dashboard-mock animate-fade-in">
-          <div className="dashboard-header">
-            <div>
-              <h2 style={{ fontSize: '2rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                {currentUser?.photo ? (
-                  <img
-                    src={currentUser.photo}
-                    alt="Avatar"
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      border: '2px solid var(--primary)',
-                    }}
-                  />
-                ) : (
-                  <svg
-                    width="28"
-                    height="28"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    style={{ color: 'var(--primary)' }}
-                  >
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                  </svg>
-                )}
-                <span style={{ marginLeft: '8px' }}>VendorBridge ERP</span>
-              </h2>
-              <p style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>
-                Connected as:{' '}
-                <strong>
-                  {currentUser?.firstName} {currentUser?.lastName}
-                </strong>{' '}
-                ({currentUser?.email})
-              </p>
+        <div className="erp-console animate-fade-in">
+          {/* Sidebar */}
+          <aside className="erp-sidebar">
+            <div className="sidebar-logo">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ filter: 'drop-shadow(0 0 6px var(--accent))' }}>
+                <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v1" />
+                <path d="M18 8h4a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-4" />
+                <path d="M16 12h8" />
+              </svg>
+              <span>Vendor<span style={{ color: 'var(--accent)' }}>Bridge</span></span>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <span className="user-role-tag">
-                {ROLES.find((r) => r.id === currentUser?.role)?.name || currentUser?.role}
-              </span>
-              <button className="btn-secondary" onClick={handleLogout}>
-                Logout
+            <div className="sidebar-menu">
+              <button 
+                onClick={() => handleNavigateConsole('dashboard')}
+                className={`menu-item ${consoleTab === 'dashboard' ? 'active' : ''}`}
+              >
+                📊 Dashboard Overview
+              </button>
+              <button 
+                onClick={() => handleNavigateConsole('vendors')}
+                className={`menu-item ${consoleTab === 'vendors' ? 'active' : ''}`}
+              >
+                🏢 Vendor Directory
+              </button>
+              <button 
+                onClick={() => handleNavigateConsole('rfqs')}
+                className={`menu-item ${consoleTab === 'rfqs' ? 'active' : ''}`}
+              >
+                📝 RFQ Composer
+              </button>
+              <button 
+                onClick={() => handleNavigateConsole('quotes')}
+                className={`menu-item ${consoleTab === 'quotes' ? 'active' : ''}`}
+              >
+                📩 Submit Bids
+              </button>
+              <button 
+                onClick={() => handleNavigateConsole('compare')}
+                className={`menu-item ${consoleTab === 'compare' ? 'active' : ''}`}
+              >
+                ⚖️ Compare Quotes
+              </button>
+              <button 
+                onClick={() => handleNavigateConsole('approvals')}
+                className={`menu-item ${consoleTab === 'approvals' ? 'active' : ''}`}
+              >
+                🛡️ Approvals Desk
+              </button>
+              <button 
+                onClick={() => handleNavigateConsole('pos')}
+                className={`menu-item ${consoleTab === 'pos' ? 'active' : ''}`}
+              >
+                📄 PO & Invoices
+              </button>
+              <button 
+                onClick={() => handleNavigateConsole('logs')}
+                className={`menu-item ${consoleTab === 'logs' ? 'active' : ''}`}
+              >
+                🔍 Audit Trails
+              </button>
+              <button 
+                onClick={() => handleNavigateConsole('analytics')}
+                className={`menu-item ${consoleTab === 'analytics' ? 'active' : ''}`}
+              >
+                📈 Reports & Trends
               </button>
             </div>
-          </div>
 
-          <div style={{ marginBottom: '32px' }}>
-            <h3 style={{ fontSize: '1.4rem', marginBottom: '8px' }}>Auth Flow Successful!</h3>
-            <p style={{ color: 'var(--text-secondary)' }}>
-              You have authenticated successfully with local session persistence. In subsequent
-              steps, we will build out full modules for this dashboard interface based on your role
-              privileges.
-            </p>
-          </div>
-
-          <div className="card-grid">
-            <div className="dashboard-card">
-              <h4>Role-Based Access Control</h4>
-              <div className="value">{currentUser?.role.toUpperCase()}</div>
-              <p className="desc">Permissions locked to this account profile details.</p>
-            </div>
-            <div className="dashboard-card">
-              <h4>Active Session State</h4>
-              <div className="value">PERSISTENT</div>
-              <p className="desc">
-                Refreshing the page keeps you logged in via secure local storage.
-              </p>
-            </div>
-            <div className="dashboard-card">
-              <h4>Mock Database Accounts</h4>
-              <div className="value">
-                {JSON.parse(localStorage.getItem('users') || '[]').length} Registered
+            {/* User Profile Info Widget */}
+            <div className="user-profile-widget">
+              {currentUser?.photo ? (
+                <img
+                  src={currentUser.photo}
+                  alt="Avatar"
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: '1.5px solid var(--accent)',
+                  }}
+                />
+              ) : (
+                <div className="user-avatar">
+                  {currentUser?.firstName?.substring(0, 1)}{currentUser?.lastName?.substring(0, 1)}
+                </div>
+              )}
+              <div style={{ textAlign: 'left', overflow: 'hidden' }}>
+                <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text)', display: 'block' }}>
+                  {currentUser?.firstName} {currentUser?.lastName}
+                </span>
+                <span style={{ fontSize: '11px', color: 'var(--accent)', textTransform: 'capitalize' }}>
+                  {getMappedRole(currentUser?.role).replace('_', ' ')}
+                </span>
               </div>
-              <p className="desc">Total users currently stored in your browser's environment.</p>
             </div>
-          </div>
+          </aside>
 
-          <div
-            style={{
-              backgroundColor: 'var(--bg-secondary)',
-              padding: '24px',
-              borderRadius: 'var(--radius-lg)',
-              border: '2px solid var(--border-light)',
-            }}
-          >
-            <h4 style={{ marginBottom: '12px' }}>Your Profile Data</h4>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '150px 1fr',
-                gap: '12px',
-                fontSize: '0.95rem',
-              }}
-            >
-              <span style={{ color: 'var(--text-muted)' }}>Full Name:</span>
-              <span>
-                {currentUser?.firstName} {currentUser?.lastName}
-              </span>
-              <span style={{ color: 'var(--text-muted)' }}>Email:</span>
-              <span>{currentUser?.email}</span>
-              <span style={{ color: 'var(--text-muted)' }}>Phone:</span>
-              <span>{currentUser?.phone}</span>
-              <span style={{ color: 'var(--text-muted)' }}>Country:</span>
-              <span>{currentUser?.country}</span>
-              <span style={{ color: 'var(--text-muted)' }}>Additional Details:</span>
-              <span>{currentUser?.additionalInfo || 'N/A'}</span>
+          {/* Console Workarea Content */}
+          <main className="console-workarea">
+            {/* Console top header banner */}
+            <header className="console-header">
+              <div style={{ textAlign: 'left' }}>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                  Console Core // {consoleTab.toUpperCase()}
+                </span>
+                <h1 style={{ fontSize: '20px', margin: '4px 0 0 0', fontWeight: '700' }}>
+                  {consoleTab === 'dashboard' && 'Operations Dashboard'}
+                  {consoleTab === 'vendors' && 'Supplier Accreditation Console'}
+                  {consoleTab === 'rfqs' && 'Request For Quotation (RFQ) Composer'}
+                  {consoleTab === 'quotes' && 'Supplier Bidding Console'}
+                  {consoleTab === 'compare' && 'Quotation Evaluator'}
+                  {consoleTab === 'approvals' && 'Hierarchy Approvals Manager'}
+                  {consoleTab === 'pos' && 'Legal Accounting & Dispatches'}
+                  {consoleTab === 'logs' && 'System Transaction Logs'}
+                  {consoleTab === 'analytics' && 'Spending Analysis & Audits'}
+                </h1>
+              </div>
+
+              <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+                <div style={{
+                  fontSize: '11px',
+                  backgroundColor: 'rgba(100, 255, 218, 0.08)',
+                  color: 'var(--accent)',
+                  border: '1px solid rgba(100, 255, 218, 0.2)',
+                  borderRadius: '30px',
+                  padding: '4px 12px',
+                  fontWeight: '600',
+                }}>
+                  ACTIVE ROLE: {getMappedRole(currentUser?.role).toUpperCase()}
+                </div>
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    backgroundColor: 'rgba(255, 85, 85, 0.1)',
+                    color: '#FF5555',
+                    border: '1px solid rgba(255, 85, 85, 0.3)',
+                    borderRadius: '4px',
+                    padding: '8px 14px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                  }}
+                  onMouseEnter={e => e.target.style.backgroundColor = 'rgba(255, 85, 85, 0.2)'}
+                  onMouseLeave={e => e.target.style.backgroundColor = 'rgba(255, 85, 85, 0.1)'}
+                >
+                  Logout
+                </button>
+              </div>
+            </header>
+
+            {/* Renders Selected View */}
+            <div className="console-content">
+              {consoleTab === 'dashboard' && (
+                <ConsoleDashboard 
+                  vendors={vendors} 
+                  rfqs={rfqs} 
+                  quotes={quotes} 
+                  auditLogs={auditLogs} 
+                  onNavigate={handleNavigateConsole}
+                  userRole={getMappedRole(currentUser?.role)}
+                />
+              )}
+              {consoleTab === 'vendors' && (
+                <ConsoleVendors 
+                  vendors={vendors} 
+                  setVendors={setVendors}
+                  addLog={addLog}
+                />
+              )}
+              {consoleTab === 'rfqs' && (
+                <ConsoleRFQs 
+                  rfqs={rfqs} 
+                  setRfqs={setRfqs} 
+                  vendors={vendors}
+                  addLog={addLog}
+                  onNavigate={handleNavigateConsole}
+                />
+              )}
+              {consoleTab === 'quotes' && (
+                <ConsoleSubmitQuote 
+                  rfqs={rfqs} 
+                  quotes={quotes} 
+                  setQuotes={setQuotes}
+                  setRfqs={setRfqs}
+                  vendors={vendors}
+                  addLog={addLog}
+                  onNavigate={handleNavigateConsole}
+                />
+              )}
+              {consoleTab === 'compare' && (
+                <ConsoleCompare 
+                  rfqs={rfqs} 
+                  quotes={quotes}
+                  setRfqs={setRfqs}
+                  addLog={addLog}
+                  onNavigate={handleNavigateConsole}
+                />
+              )}
+              {consoleTab === 'approvals' && (
+                <ConsoleApprovals 
+                  rfqs={rfqs} 
+                  setRfqs={setRfqs} 
+                  addLog={addLog}
+                  onNavigate={handleNavigateConsole}
+                  setPoData={setPoData}
+                />
+              )}
+              {consoleTab === 'pos' && (
+                <ConsolePOs 
+                  poData={poData}
+                  addLog={addLog}
+                />
+              )}
+              {consoleTab === 'logs' && (
+                <ConsoleLogs 
+                  auditLogs={auditLogs}
+                />
+              )}
+              {consoleTab === 'analytics' && (
+                <ConsoleAnalytics />
+              )}
             </div>
-          </div>
+          </main>
         </div>
       )}
 
       {/* Forgot Password Modal */}
       {showForgotModal && (
-        <div className="modal-overlay" onClick={() => setShowForgotModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h4>Reset Password</h4>
-              <p>Enter your email and we'll send you a recovery link.</p>
+        <div className="modal-overlay" onClick={() => setShowForgotModal(false)} style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(2, 12, 27, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+        }}>
+          <div className="glass-panel modal-content" onClick={(e) => e.stopPropagation()} style={{
+            padding: '30px',
+            borderRadius: 'var(--radius-lg)',
+            width: '100%',
+            maxWidth: '440px',
+            border: '1px solid var(--border)',
+          }}>
+            <div className="modal-header" style={{ marginBottom: '20px' }}>
+              <h4 style={{ fontSize: '1.2rem', color: 'var(--text-primary)' }}>Reset Password</h4>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '4px' }}>
+                Enter your email and we'll send you a recovery link.
+              </p>
             </div>
-            <form onSubmit={handleForgotSubmit}>
+            <form onSubmit={handleForgotSubmit} className="erp-form">
               <div className="form-group" style={{ marginBottom: '20px' }}>
                 <label htmlFor="forgot-email">Email Address</label>
                 <input
@@ -857,7 +1173,7 @@ function App() {
                   required
                 />
               </div>
-              <div className="modal-actions">
+              <div className="modal-actions" style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
                 <button
                   type="button"
                   className="btn-secondary"
@@ -876,18 +1192,35 @@ function App() {
 
       {/* Photo Picker Options & Webcam capture modal */}
       {showPhotoModal && (
-        <div className="modal-overlay" onClick={closePhotoModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h4>Profile Picture</h4>
-              <p>Select how you would like to assign your profile photo.</p>
+        <div className="modal-overlay" onClick={closePhotoModal} style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(2, 12, 27, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+        }}>
+          <div className="glass-panel modal-content" onClick={(e) => e.stopPropagation()} style={{
+            padding: '30px',
+            borderRadius: 'var(--radius-lg)',
+            width: '100%',
+            maxWidth: '440px',
+            border: '1px solid var(--border)',
+          }}>
+            <div className="modal-header" style={{ marginBottom: '20px' }}>
+              <h4 style={{ fontSize: '1.2rem', color: 'var(--text-primary)' }}>Profile Picture</h4>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '4px' }}>
+                Select how you would like to assign your profile photo.
+              </p>
             </div>
 
             {!cameraMode ? (
-              <div className="photo-options-list">
+              <div className="photo-options-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <button
                   type="button"
-                  className="photo-option-btn"
+                  className="photo-option-btn btn-secondary"
+                  style={{ width: '100%', padding: '14px', justifyContent: 'center' }}
                   onClick={() => document.getElementById('photo-file-input')?.click()}
                 >
                   <svg
@@ -905,10 +1238,15 @@ function App() {
                     <polyline points="17 8 12 3 7 8"></polyline>
                     <line x1="12" y1="3" x2="12" y2="15"></line>
                   </svg>
-                  <span>Upload from File</span>
+                  <span style={{ marginLeft: '8px' }}>Upload from File</span>
                 </button>
 
-                <button type="button" className="photo-option-btn" onClick={startCamera}>
+                <button
+                  type="button"
+                  className="photo-option-btn btn-secondary"
+                  style={{ width: '100%', padding: '14px', justifyContent: 'center' }}
+                  onClick={startCamera}
+                >
                   <svg
                     width="20"
                     height="20"
@@ -923,7 +1261,7 @@ function App() {
                     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                     <circle cx="12" cy="13" r="4"></circle>
                   </svg>
-                  <span>Capture from Camera</span>
+                  <span style={{ marginLeft: '8px' }}>Capture from Camera</span>
                 </button>
 
                 <input
@@ -935,13 +1273,14 @@ function App() {
                 />
               </div>
             ) : (
-              <div className="camera-preview-container">
+              <div className="camera-preview-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
                 <video
                   id="camera-video"
                   className="camera-video"
                   autoPlay
                   playsInline
                   muted
+                  style={{ width: '100%', maxWidth: '320px', height: '240px', borderRadius: 'var(--radius-md)', backgroundColor: '#000', transform: 'scaleX(-1)' }}
                 ></video>
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <button type="button" className="btn-secondary" onClick={stopCamera}>
@@ -954,7 +1293,7 @@ function App() {
               </div>
             )}
 
-            <div className="modal-actions" style={{ marginTop: '24px' }}>
+            <div className="modal-actions" style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
               <button type="button" className="btn-secondary" onClick={closePhotoModal}>
                 Cancel
               </button>
