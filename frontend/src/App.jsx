@@ -7,12 +7,11 @@ import RoleSimulator from './components/RoleSimulator.jsx';
 import AnalyticsPreview from './components/AnalyticsPreview.jsx';
 import { ToastContainer } from './components/Toast';
 import CreateRfq from './components/CreateRfq.jsx';
+import Vendors from './components/Vendors.jsx';
 
-// Import all Console Views
+// Import Console Views
 import {
   ConsoleDashboard,
-  ConsoleVendors,
-  ConsoleRFQs,
   ConsoleSubmitQuote,
   ConsoleCompare,
   ConsoleApprovals,
@@ -93,8 +92,8 @@ function App() {
   // SHARED STATE ENGINE (SIMULATED DATABASE)
   // ==========================================
   
-  // 1. Vendor Partners Directory State
-  const [vendors, setVendors] = useState([
+  // 1. Initial Local State Vendors list (shared with other screens)
+  const [sharedVendors, setSharedVendors] = useState([
     { name: 'Apex Industries Ltd', category: 'Manufacturing', gst: '29AAACA5481M1Z3', email: 'billing@apexindustries.com', rating: '4.8/5.0', status: 'Active' },
     { name: 'Zenith Tech Solutions', category: 'IT Services', gst: '29AABBB8490C1ZH', email: 'sales@zenithtech.com', rating: '4.2/5.0', status: 'Active' },
     { name: 'SolarTech Energy Corp', category: 'Utilities', gst: '29AACCC4120D2Z1', email: 'contracts@solartech.com', rating: '4.5/5.0', status: 'Active' },
@@ -325,53 +324,23 @@ function App() {
       return;
     }
 
-    fetch('http://localhost:8081/api/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: loginEmail,
-        password: loginPassword,
-      }),
-    })
-      .then((res) => {
-        if (!res.ok) {
-          return res.json()
-            .then((err) => {
-              throw new Error(err.message || 'Invalid email or password');
-            })
-            .catch(() => {
-              throw new Error('Connection error or invalid credentials');
-            });
-        }
-        return res.json();
-      })
-      .then((data) => {
-        addToast(`Welcome back, ${data.firstName}!`, 'success');
-        setCurrentUser(data);
-        localStorage.setItem('currentUser', JSON.stringify(data));
-        
-        const localUsers = JSON.parse(localStorage.getItem('users') || '[]');
-        if (!localUsers.some((u) => u.email.toLowerCase() === data.email.toLowerCase())) {
-          localUsers.push({
-            firstName: data.firstName,
-            lastName: data.lastName,
-            email: data.email,
-            role: data.role,
-            country: data.country,
-            phone: data.phone,
-            photo: data.photo,
-            additionalInfo: data.additionalInfo,
-          });
-          localStorage.setItem('users', JSON.stringify(localUsers));
-        }
-        setView('dashboard');
-        addLog(data.role, 'Successfully signed into the ERP console.');
-      })
-      .catch((err) => {
-        addToast(err.message, 'error');
-      });
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const matchedUser = users.find(
+      (u) => u.email.toLowerCase() === loginEmail.toLowerCase() && u.password === loginPassword,
+    );
+
+    if (matchedUser) {
+      addToast(`Welcome back, ${matchedUser.firstName}!`, 'success');
+      setCurrentUser(matchedUser);
+      localStorage.setItem('currentUser', JSON.stringify(matchedUser));
+      setView('dashboard');
+      addLog(matchedUser.role, 'Successfully signed into the ERP console.');
+    } else {
+      addToast(
+        'Invalid email or password. Try demo accounts (e.g. officer@vendorbridge.com / password123)',
+        'error',
+      );
+    }
   };
 
   const handleRegisterSubmit = (e) => {
@@ -413,71 +382,41 @@ function App() {
       return;
     }
 
-    const signupPayload = {
-      firstName: regFirstName.trim(),
-      lastName: regLastName.trim(),
-      email: regEmail.trim().toLowerCase(),
-      phone: regPhone.trim(),
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    if (users.some((u) => u.email.toLowerCase() === regEmail.toLowerCase())) {
+      addToast('This email is already registered.', 'error');
+      return;
+    }
+
+    const newUser = {
+      firstName: regFirstName,
+      lastName: regLastName,
+      email: regEmail,
+      phone: regPhone,
       role: regRole,
-      country: regCountry.trim(),
+      country: regCountry,
+      additionalInfo: regInfo,
       password: regPassword,
       photo: regPhoto,
-      additionalInfo: regInfo.trim(),
     };
 
-    fetch('http://localhost:8081/api/auth/signup', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(signupPayload),
-    })
-      .then((res) => {
-        if (!res.ok) {
-          return res.json()
-            .then((err) => {
-              throw new Error(err.message || 'Registration failed');
-            })
-            .catch(() => {
-              throw new Error('Connection error or invalid field data');
-            });
-        }
-        return res.json();
-      })
-      .then((data) => {
-        addToast('Account created successfully! You can now log in.', 'success');
-        
-        // Clear registration fields
-        setRegFirstName('');
-        setRegLastName('');
-        setRegEmail('');
-        setRegPhone('');
-        setRegCountry('');
-        setRegInfo('');
-        setRegPassword('');
-        setRegConfirmPassword('');
-        setRegPhoto(null);
+    const updatedUsers = [...users, newUser];
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
 
-        const localUsers = JSON.parse(localStorage.getItem('users') || '[]');
-        if (!localUsers.some((u) => u.email.toLowerCase() === data.email.toLowerCase())) {
-          localUsers.push({
-            firstName: data.firstName,
-            lastName: data.lastName,
-            email: data.email,
-            role: data.role,
-            country: data.country,
-            phone: data.phone,
-            photo: data.photo,
-            additionalInfo: data.additionalInfo,
-          });
-          localStorage.setItem('users', JSON.stringify(localUsers));
-        }
+    addToast('Account created successfully! You can now log in.', 'success');
 
-        setView('login');
-      })
-      .catch((err) => {
-        addToast(err.message, 'error');
-      });
+    // Clear registration fields
+    setRegFirstName('');
+    setRegLastName('');
+    setRegEmail('');
+    setRegPhone('');
+    setRegCountry('');
+    setRegInfo('');
+    setRegPassword('');
+    setRegConfirmPassword('');
+    setRegPhoto(null);
+
+    setView('login');
   };
 
   const handleForgotSubmit = (e) => {
@@ -567,7 +506,7 @@ function App() {
                 country: 'India',
                 phone: '+91 99999 99999',
                 additionalInfo: 'Simulated Demo Account',
-                photo: null
+                photo: null,
               };
               setCurrentUser(demoUser);
               setView('dashboard');
@@ -586,7 +525,7 @@ function App() {
                 country: 'India',
                 phone: '+91 99999 99999',
                 additionalInfo: 'Simulated Demo Account',
-                photo: null
+                photo: null,
               };
               setCurrentUser(demoUser);
               setView('dashboard');
@@ -1066,7 +1005,7 @@ function App() {
             <div className="console-content">
               {consoleTab === 'dashboard' && (
                 <ConsoleDashboard 
-                  vendors={vendors} 
+                  vendors={sharedVendors} 
                   rfqs={rfqs} 
                   quotes={quotes} 
                   auditLogs={auditLogs} 
@@ -1075,17 +1014,13 @@ function App() {
                 />
               )}
               {consoleTab === 'vendors' && (
-                <ConsoleVendors 
-                  vendors={vendors} 
-                  setVendors={setVendors}
-                  addLog={addLog}
-                />
+                <Vendors />
               )}
               {consoleTab === 'rfqs' && (
                 <CreateRfq 
                   rfqs={rfqs} 
                   setRfqs={setRfqs} 
-                  vendors={vendors}
+                  vendors={sharedVendors}
                   addLog={addLog}
                   onNavigate={handleNavigateConsole}
                 />
@@ -1096,7 +1031,7 @@ function App() {
                   quotes={quotes} 
                   setQuotes={setQuotes}
                   setRfqs={setRfqs}
-                  vendors={vendors}
+                  vendors={sharedVendors}
                   addLog={addLog}
                   onNavigate={handleNavigateConsole}
                 />
