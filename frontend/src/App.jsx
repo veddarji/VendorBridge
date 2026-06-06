@@ -346,7 +346,7 @@ function App() {
   };
 
   // Form Handlers
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
 
     if (!loginEmail || !loginPassword) {
@@ -360,29 +360,34 @@ function App() {
       return;
     }
 
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const matchedUser = users.find(
-      (u) => u.email.toLowerCase() === loginEmail.toLowerCase() && u.password === loginPassword,
-    );
+    try {
+      const response = await fetch('http://localhost:8081/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: loginEmail, password: loginPassword }),
+      });
 
-    if (matchedUser) {
-      addToast(`Welcome back, ${matchedUser.firstName}!`, 'success');
-      setCurrentUser(matchedUser);
-      localStorage.setItem('currentUser', JSON.stringify(matchedUser));
-      setView('dashboard');
-      addLog(matchedUser.role, 'Successfully signed into the ERP console.');
-    } else {
-      addToast(
-        'Invalid email or password. Try demo accounts (e.g. officer@vendorbridge.com / password123)',
-        'error',
-      );
+      if (response.ok) {
+        const data = await response.json();
+        addToast(`Welcome back, ${data.firstName}!`, 'success');
+        setCurrentUser(data);
+        localStorage.setItem('currentUser', JSON.stringify(data));
+        localStorage.setItem('jwt_token', data.token); // Save JWT token for future requests
+        setView('dashboard');
+        addLog(data.role, 'Successfully signed into the ERP console.');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        addToast(errorData.message || 'Invalid email or password. Please try again.', 'error');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      addToast('Could not connect to the authentication server.', 'error');
     }
   };
 
-  const handleRegisterSubmit = (e) => {
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
 
-    // STRICT VALIDATION: Check that absolutely no field is empty
     if (
       !regFirstName.trim() ||
       !regLastName.trim() ||
@@ -418,12 +423,6 @@ function App() {
       return;
     }
 
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    if (users.some((u) => u.email.toLowerCase() === regEmail.toLowerCase())) {
-      addToast('This email is already registered.', 'error');
-      return;
-    }
-
     const newUser = {
       firstName: regFirstName,
       lastName: regLastName,
@@ -436,23 +435,36 @@ function App() {
       photo: regPhoto,
     };
 
-    const updatedUsers = [...users, newUser];
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
+    try {
+      const response = await fetch('http://localhost:8081/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newUser),
+      });
 
-    addToast('Account created successfully! You can now log in.', 'success');
+      if (response.ok) {
+        addToast('Account created successfully! You can now log in.', 'success');
 
-    // Clear registration fields
-    setRegFirstName('');
-    setRegLastName('');
-    setRegEmail('');
-    setRegPhone('');
-    setRegCountry('');
-    setRegInfo('');
-    setRegPassword('');
-    setRegConfirmPassword('');
-    setRegPhoto(null);
+        // Clear registration fields
+        setRegFirstName('');
+        setRegLastName('');
+        setRegEmail('');
+        setRegPhone('');
+        setRegCountry('');
+        setRegInfo('');
+        setRegPassword('');
+        setRegConfirmPassword('');
+        setRegPhoto(null);
 
-    setView('login');
+        setView('login');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        addToast(errorData.message || 'Registration failed. Email might already be taken.', 'error');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      addToast('Could not connect to the authentication server.', 'error');
+    }
   };
 
   const handleForgotSubmit = (e) => {
