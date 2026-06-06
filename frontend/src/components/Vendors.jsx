@@ -29,11 +29,11 @@ const INITIAL_VENDORS = [
   { id: 25, name: 'Steel Weld Corp', category: 'Manufacturing', gst: '27AABCK7L8M9', contact: '+91 99345 67890', status: 'Pending' },
   { id: 26, name: 'Rogue Traders', category: 'Trading', gst: '27AABCN0O1P2', contact: '+91 99456 78901', status: 'Blocked' },
   { id: 27, name: 'Shady Supplies', category: 'Constructions', gst: '27AABCT8U9V0', contact: '+91 99567 89012', status: 'Blocked' },
-  { id: 28, name: 'Quantum Energy (Suspended)', category: 'Energy', gst: '27AABCQ3R4S5', contact: '+91 99678 90123', status: 'Blocked' }
+  { id: 28, name: 'Quantum Energy (Suspended)', category: 'Energy', gst: '27AABCQ3R4S5', contact: '+91 99678 90123', status: 'Blocked' },
 ];
 
-export default function Vendors() {
-  const [vendors, setVendors] = useState(() => {
+export default function Vendors({ vendors: propVendors, setVendors: propSetVendors }) {
+  const [localVendors, setLocalVendors] = useState(() => {
     try {
       const savedVendors = localStorage.getItem('vendors');
       return savedVendors ? JSON.parse(savedVendors) : INITIAL_VENDORS;
@@ -41,6 +41,9 @@ export default function Vendors() {
       return INITIAL_VENDORS;
     }
   });
+
+  const vendors = propVendors || localVendors;
+  const setVendors = propSetVendors || setLocalVendors;
 
   const [activeTab, setActiveTab] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');

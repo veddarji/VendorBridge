@@ -92,12 +92,48 @@ function App() {
   // SHARED STATE ENGINE (SIMULATED DATABASE)
   // ==========================================
   
-  // 1. Initial Local State Vendors list (shared with other screens)
-  const [sharedVendors, setSharedVendors] = useState([
-    { name: 'Apex Industries Ltd', category: 'Manufacturing', gst: '29AAACA5481M1Z3', email: 'billing@apexindustries.com', rating: '4.8/5.0', status: 'Active' },
-    { name: 'Zenith Tech Solutions', category: 'IT Services', gst: '29AABBB8490C1ZH', email: 'sales@zenithtech.com', rating: '4.2/5.0', status: 'Active' },
-    { name: 'SolarTech Energy Corp', category: 'Utilities', gst: '29AACCC4120D2Z1', email: 'contracts@solartech.com', rating: '4.5/5.0', status: 'Active' },
-  ]);
+  const [sharedVendors, setSharedVendors] = useState(() => {
+    try {
+      const saved = localStorage.getItem('vendors');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch {
+      // ignore
+    }
+    return [
+      { id: 1, name: 'Apex Industries Ltd', category: 'Manufacturing', gst: '29AAACA5481M1Z3', contact: '+91 99000 11111', email: 'billing@apexindustries.com', rating: '4.8/5.0', status: 'Active' },
+      { id: 2, name: 'Zenith Tech Solutions', category: 'IT Services', gst: '29AABBB8490C1ZH', contact: '+91 22222 11111', email: 'sales@zenithtech.com', rating: '4.2/5.0', status: 'Active' },
+      { id: 3, name: 'SolarTech Energy Corp', category: 'Utilities', gst: '29AACCC4120D2Z1', contact: '+91 33333 44444', email: 'contracts@solartech.com', rating: '4.5/5.0', status: 'Active' },
+      { id: 4, name: 'Infra Supplies Pvt Ltd', category: 'Constructions', gst: '27AAACCS1429B1Z0', contact: '+91 98765 43210', email: 'sales@infrasupplies.com', rating: '4.5/5.0', status: 'Active' },
+      { id: 5, name: 'Tech Core LTD', category: 'IT', gst: '27AABC5678Z0', contact: '+91 87654 32109', email: 'support@techcore.com', rating: '4.2/5.0', status: 'Active' },
+      { id: 6, name: 'Fasting Transport', category: 'Logistics', gst: '27AABC9012Z0', contact: '+91 76543 21098', email: 'info@fastingtransport.com', rating: '3.8/5.0', status: 'Blocked' },
+      { id: 7, name: 'Apex Builders', category: 'Constructions', gst: '27AABC1111Z1', contact: '+91 99999 88888', email: 'bids@apexbuilders.com', rating: '4.6/5.0', status: 'Active' },
+      { id: 8, name: 'ByteWave Software', category: 'IT', gst: '27AABC2222Z2', contact: '+91 88888 77777', email: 'sales@bytewave.com', rating: '4.4/5.0', status: 'Active' },
+      { id: 9, name: 'Swift Cargo logistics', category: 'Logistics', gst: '27AABC3333Z3', contact: '+91 77777 66666', email: 'ops@swiftcargo.com', rating: '4.1/5.0', status: 'Active' },
+      { id: 10, name: 'Nova Industries', category: 'Manufacturing', gst: '27AABC4444Z4', contact: '+91 66666 55555', email: 'contact@novaind.com', rating: '4.3/5.0', status: 'Active' },
+      { id: 11, name: 'Beacon Consultants', category: 'Consulting', gst: '27AABC5555Z5', contact: '+91 55555 44444', email: 'hello@beacon.com', rating: '4.7/5.0', status: 'Active' },
+      { id: 12, name: 'Vertex Services', category: 'Services', gst: '27AABC6666Z6', contact: '+91 44444 33333', email: 'service@vertex.com', rating: '4.0/5.0', status: 'Active' },
+      { id: 13, name: 'Blue Sky Energy', category: 'Energy', gst: '27AABC7777Z7', contact: '+91 33333 22222', email: 'clean@bluesky.com', rating: '4.5/5.0', status: 'Active' },
+      { id: 14, name: 'Global Logistics Corp', category: 'Logistics', gst: '27AABC9999Z9', contact: '+91 11111 00000', email: 'global@logistics.com', rating: '4.2/5.0', status: 'Active' },
+      { id: 15, name: 'Prime Metal Works', category: 'Manufacturing', gst: '27AABCA1B2C3', contact: '+91 98123 45678', email: 'info@primemetal.com', rating: '4.4/5.0', status: 'Active' },
+      { id: 16, name: 'Alpha Consultants', category: 'Consulting', gst: '27AABCD4E5F6', contact: '+91 98234 56789', email: 'partner@alphaconsult.com', rating: '4.6/5.0', status: 'Active' },
+      { id: 17, name: 'Omni Facility Services', category: 'Services', gst: '27AABCG7H8I9', contact: '+91 98345 67890', email: 'admin@omnifacility.com', rating: '4.1/5.0', status: 'Active' },
+      { id: 18, name: 'EcoPower Systems', category: 'Energy', gst: '27AABCJ0K1L2', contact: '+91 98456 78901', email: 'green@ecopower.com', rating: '4.3/5.0', status: 'Active' },
+      { id: 19, name: 'Matrix IT Consultants', category: 'IT', gst: '27AABCM3N4O5', contact: '+91 98567 89012', email: 'hr@matrixit.com', rating: '4.5/5.0', status: 'Active' },
+      { id: 20, name: 'Titan Logistics', category: 'Logistics', gst: '27AABCP6Q7R8', contact: '+91 98678 90123', email: 'dispatch@titan.com', rating: '4.0/5.0', status: 'Active' },
+      { id: 21, name: 'Eagle Steel Fabrication', category: 'Manufacturing', gst: '27AABCS9T0U1', contact: '+91 98789 01234', email: 'sales@eaglesteel.com', rating: '4.4/5.0', status: 'Active' },
+      { id: 22, name: 'Stratosphere Consulting', category: 'Consulting', gst: '27AABCV2W3X4', contact: '+91 98890 12345', email: 'exec@stratosphere.com', rating: '4.7/5.0', status: 'Active' },
+      { id: 23, name: 'Pioneer Facility Care', category: 'Services', gst: '27AABCY5Z6A7', contact: '+91 98901 23456', email: 'pioneer@facility.com', rating: '4.2/5.0', status: 'Active' },
+      { id: 24, name: 'Dynamic Tech Inc', category: 'IT', gst: '27AABCB8C9D0', contact: '+91 99012 34567', email: 'innovate@dynamictech.com', rating: '4.3/5.0', status: 'Pending' },
+      { id: 25, name: 'Greenfield Agri Solutions', category: 'Agriculture', gst: '27AABCE1F2G3', contact: '+91 99123 45678', email: 'deals@greenfieldagri.com', rating: '4.1/5.0', status: 'Pending' },
+      { id: 26, name: 'Falcon Express', category: 'Logistics', gst: '27AABCH4I5J6', contact: '+91 99234 56789', email: 'express@falcon.com', rating: '4.0/5.0', status: 'Pending' },
+      { id: 27, name: 'Steel Weld Corp', category: 'Manufacturing', gst: '27AABCK7L8M9', contact: '+91 99345 67890', email: 'welding@steelweld.com', rating: '4.3/5.0', status: 'Pending' },
+      { id: 28, name: 'Rogue Traders', category: 'Trading', gst: '27AABCN0O1P2', contact: '+91 99456 78901', email: 'contact@roguetraders.com', rating: '2.5/5.0', status: 'Blocked' },
+      { id: 29, name: 'Shady Supplies', category: 'Constructions', gst: '27AABCT8U9V0', contact: '+91 99567 89012', email: 'sales@shadysupplies.com', rating: '1.8/5.0', status: 'Blocked' },
+      { id: 30, name: 'Quantum Energy (Suspended)', category: 'Energy', gst: '27AABCQ3R4S5', contact: '+91 99678 90123', email: 'legal@quantumenergy.com', rating: '3.5/5.0', status: 'Blocked' },
+    ];
+  });
 
   // 2. Broadcasted RFQs State
   const [rfqs, setRfqs] = useState([
@@ -1014,7 +1050,7 @@ function App() {
                 />
               )}
               {consoleTab === 'vendors' && (
-                <Vendors />
+                <Vendors vendors={sharedVendors} setVendors={setSharedVendors} />
               )}
               {consoleTab === 'rfqs' && (
                 <CreateRfq 
