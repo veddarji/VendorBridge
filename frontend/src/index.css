@@ -1,6 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root {
+  /* Landing Page Design Tokens */
+  --bg: #0A192F;
+  --bg-rgb: 10, 25, 47;
+  --surface: #112240;
+  --surface-rgb: 17, 34, 64;
+  --surface-hover: #1b2f54;
+  --accent: #64FFDA;
+  --accent-rgb: 100, 255, 218;
+  --text: #E6F1FF;
+  --text-muted: #8892B0;
+  --border: #233554;
+  --border-accent: rgba(100, 255, 218, 0.2);
+  --shadow: rgba(2, 12, 27, 0.7) 0px 10px 30px -15px;
+  --font-sans: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Fira Code', 'Courier New', monospace;
+  --transition: all 0.25s cubic-bezier(0.645, 0.045, 0.355, 1);
+
+  /* Origin/Main Variables */
   --font-primary: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* Color Palette - Trust & Growth (Deep Navy & Emerald) */
@@ -10,7 +28,6 @@
 
   --text-primary: #e6f1ff;
   --text-secondary: #ccd6f6;
-  --text-muted: #8892b0;
 
   --primary: #64ffda;
   --primary-hover: #52e0c2;
@@ -40,6 +57,13 @@
   --transition-fast: 0.15s ease;
   --transition-normal: 0.25s ease;
   --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  
+  font-family: var(--font-sans);
+  color-scheme: dark;
+  background-color: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Light Theme Variables - using a soft high-contrast light slate theme */
@@ -68,7 +92,8 @@
 }
 
 body {
-  font-family: var(--font-primary);
+  margin: 0;
+  font-family: var(--font-sans);
   background-color: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.5;
@@ -81,11 +106,54 @@ body {
   overflow-x: hidden;
 }
 
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-accent);
+}
+
 #root {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   width: 100%;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: var(--transition);
+}
+a:hover {
+  filter: brightness(1.2);
+}
+
+/* Base utility styles */
+.container {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.emerald-glow {
+  box-shadow: 0 0 20px rgba(100, 255, 218, 0.15);
+}
+
+.glass-panel {
+  background: rgba(17, 34, 64, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
 }
 
 /* Form Styles & Elements */
@@ -186,18 +254,6 @@ h6 {
   font-weight: 700;
   line-height: 1.25;
   color: var(--text-primary);
-}
-
-a {
-  color: var(--primary);
-  text-decoration: none;
-  font-weight: 500;
-  transition: color var(--transition-fast);
-}
-
-a:hover {
-  color: var(--primary-hover);
-  text-decoration: underline;
 }
 
 /* Micro-animations */
