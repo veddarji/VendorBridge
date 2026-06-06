@@ -1,250 +1,168 @@
-/* Auth Screen Layout */
+/* Auth Page Container - Centered Single View Layout */
 .auth-page {
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   min-height: 100vh;
   width: 100%;
-}
-
-/* Left panel: Slogan & branding */
-.auth-visual {
-  flex: 1.2;
-  background: radial-gradient(circle at 10% 20%, rgba(2, 44, 34, 0.95) 0%, rgba(11, 15, 25, 0.98) 90%);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 60px;
+  padding: 40px 20px;
+  background-color: var(--bg-primary);
   position: relative;
-  overflow: hidden;
-  border-right: 1px solid var(--border-light);
 }
 
-@media (max-width: 1024px) {
-  .auth-visual {
-    display: none;
-  }
-}
-
-/* Abstract design patterns for premium visual appeal */
-.auth-visual-grid {
+/* Background details */
+.auth-page::before {
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: radial-gradient(rgba(16, 185, 129, 0.07) 1.5px, transparent 1.5px);
-  background-size: 32px 32px;
-  opacity: 0.8;
+  background-image: radial-gradient(rgba(100, 255, 218, 0.05) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+  pointer-events: none;
   z-index: 1;
 }
 
-.auth-visual-glow-1 {
-  position: absolute;
-  top: -10%;
-  left: -10%;
-  width: 50%;
-  height: 50%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%);
-  z-index: 2;
-  filter: blur(40px);
-}
-
-.auth-visual-glow-2 {
-  position: absolute;
-  bottom: -10%;
-  right: -10%;
-  width: 60%;
-  height: 60%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
-  z-index: 2;
-  filter: blur(60px);
-}
-
-.auth-visual-header {
-  position: relative;
+/* Auth Cards matching the photo sketch */
+.auth-card {
+  width: 100%;
+  max-width: 420px; /* Screen 1 Login card width */
+  background-color: var(--bg-secondary);
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 40px 32px 32px 32px;
+  box-shadow: var(--shadow-xl);
   z-index: 10;
+  animation: fadeIn var(--transition-slow) forwards;
+  position: relative;
 }
 
-.auth-logo-group {
+.auth-card.register-card {
+  max-width: 640px; /* Screen 2 Register card width (wider for grid) */
+  padding: 40px 32px 28px 32px;
+  margin-bottom: 24px; /* Space for Register button outside */
+}
+
+/* Photo Circle Placeholder strictly from mockup */
+.photo-circle-placeholder {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 2px dashed var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 36px auto;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  background-color: rgba(100, 255, 218, 0.02);
+  text-transform: capitalize;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.photo-circle-placeholder:hover {
+  border-color: var(--primary);
+  border-style: solid;
+  transform: scale(1.03);
+  box-shadow: 0 0 12px var(--primary-glow-strong);
+}
+
+.photo-circle-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-hover-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(10, 25, 47, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--primary);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.photo-circle-placeholder:hover .photo-hover-overlay {
+  opacity: 1;
+}
+
+/* Photo options & Capture camera preview container */
+.photo-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.photo-option-btn {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.auth-logo-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--primary), #34d399);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  box-shadow: 0 0 20px var(--primary-glow-strong);
-}
-
-.auth-logo-text {
-  font-size: 1.6rem;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  background: linear-gradient(135deg, #ffffff, #a7f3d0);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-:root[data-theme="light"] .auth-logo-text {
-  background: linear-gradient(135deg, #ffffff, #ffffff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.auth-visual-body {
-  position: relative;
-  z-index: 10;
-  margin-top: auto;
-  margin-bottom: auto;
-  max-width: 540px;
-}
-
-.auth-visual-body h2 {
-  font-size: 2.75rem;
-  font-weight: 700;
-  margin-bottom: 20px;
-  line-height: 1.2;
-  letter-spacing: -1px;
-  background: linear-gradient(to right, #ffffff, #d1fae5);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.auth-visual-body p {
-  font-size: 1.1rem;
-  color: #9ca3af;
-  line-height: 1.6;
-}
-
-.auth-visual-footer {
-  position: relative;
-  z-index: 10;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.auth-visual-stat {
-  display: flex;
-  gap: 24px;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-val {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.stat-label {
-  font-size: 0.75rem;
-  color: #9ca3af;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-/* Right panel: Forms */
-.auth-form-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 40px;
-  background-color: var(--bg-secondary);
-  overflow-y: auto;
-  min-height: 100vh;
-}
-
-.auth-form-card {
   width: 100%;
-  max-width: 480px;
-  animation: fadeIn var(--transition-slow) forwards;
-}
-
-/* Registration is slightly wider to accommodate grid fields nicely */
-.auth-form-card.register-card {
-  max-width: 680px;
-}
-
-.auth-form-header {
-  margin-bottom: 32px;
-  text-align: left;
-}
-
-.auth-form-header h3 {
-  font-size: 1.85rem;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.auth-form-header p {
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-/* For password eyes & similar */
-.input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.input-icon-right {
-  position: absolute;
-  right: 14px;
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color var(--transition-fast);
-}
-
-.input-icon-right:hover {
+  padding: 14px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
   color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--transition-normal);
 }
 
-/* Form Helper Utilities */
-.form-options {
+.photo-option-btn:hover {
+  border-color: var(--primary);
+  background-color: var(--primary-glow);
+  transform: translateY(-1px);
+}
+
+.camera-preview-container {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  width: 100%;
+}
+
+.camera-video {
+  width: 100%;
+  max-width: 360px;
+  height: 240px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--primary);
+  background-color: #000000;
+  transform: scaleX(-1); /* Mirroring webcam stream */
+  object-fit: cover;
+}
+
+/* Input layout grids */
+.form-group {
   margin-bottom: 24px;
-  font-size: 0.875rem;
 }
 
-.remember-me {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  color: var(--text-secondary);
-  user-select: none;
-}
-
-.remember-me input {
-  width: auto;
-  cursor: pointer;
+.form-group label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--text-primary); /* High contrast to match photo text labels */
+  text-align: left;
 }
 
 .form-row {
@@ -253,104 +171,85 @@
   gap: 20px;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 600px) {
   .form-row {
     grid-template-columns: 1fr;
     gap: 0;
   }
 }
 
-.btn-full {
-  width: 100%;
-  padding: 14px;
-  font-size: 1rem;
+/* Custom rounded outline buttons matching the mockup style */
+.btn-sketch-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 36px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 9999px; /* Pill-shaped / oval */
+  border: 2px solid var(--primary);
+  background-color: transparent;
+  color: var(--primary);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+  outline: none;
 }
 
-.auth-alternative {
+.btn-sketch-outline:hover {
+  background-color: var(--primary-glow);
+  box-shadow: 0 0 15px var(--primary-glow-strong);
+  transform: translateY(-1px);
+}
+
+.btn-sketch-outline:active {
+  transform: translateY(0);
+}
+
+/* Centering actions in card */
+.login-action-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+.register-action-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  z-index: 10;
+}
+
+/* Minimal navigation switcher below views */
+.auth-view-switcher {
   margin-top: 24px;
   text-align: center;
   font-size: 0.9rem;
-  color: var(--text-secondary);
+  color: var(--text-muted);
+  z-index: 10;
 }
 
-/* Visual Role Selection Cards */
-.role-selection-label {
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin-bottom: 10px;
-  color: var(--text-secondary);
-  text-align: left;
-}
-
-.role-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-@media (max-width: 640px) {
-  .role-cards-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.role-card {
-  background-color: var(--bg-tertiary);
-  border: 2px solid var(--border-light);
-  border-radius: var(--radius-md);
-  padding: 16px 12px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  transition: all var(--transition-normal);
-  text-align: center;
-}
-
-.role-card:hover {
-  border-color: var(--text-secondary);
-  transform: translateY(-2px);
-}
-
-.role-card.active {
-  border-color: var(--primary);
-  background-color: var(--primary-glow);
-  box-shadow: 0 4px 12px var(--primary-glow);
-}
-
-.role-icon {
-  color: var(--text-secondary);
-  transition: color var(--transition-normal);
-}
-
-.role-card.active .role-icon {
-  color: var(--primary);
-}
-
-.role-name {
-  font-size: 0.8rem;
+.auth-view-switcher a {
   font-weight: 600;
-  color: var(--text-secondary);
-  transition: color var(--transition-normal);
+  text-decoration: none;
 }
 
-.role-card.active .role-name {
-  color: var(--text-primary);
+/* Input wrappers for clean layout */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 
-/* Forgot Password Modal style */
+/* Modal / Forgot Password styling */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
+  background-color: rgba(10, 25, 47, 0.8);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -360,7 +259,7 @@
 
 .modal-content {
   background-color: var(--bg-secondary);
-  border: 1px solid var(--border-light);
+  border: 2px solid var(--border-light);
   border-radius: var(--radius-lg);
   padding: 32px;
   max-width: 440px;
@@ -369,30 +268,24 @@
   animation: fadeIn var(--transition-normal) forwards;
 }
 
-.modal-header {
-  margin-bottom: 20px;
-  text-align: left;
-}
-
 .modal-header h4 {
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin-bottom: 6px;
+  font-size: 1.35rem;
+  margin-bottom: 8px;
 }
 
 .modal-header p {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 24px;
 }
 
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  margin-top: 24px;
 }
 
-/* Mock Dashboard screen (Temp Success Landing page) */
+/* Dashboard Mock elements */
 .dashboard-mock {
   padding: 40px;
   max-width: 1200px;
@@ -410,24 +303,15 @@
   margin-bottom: 40px;
 }
 
-.user-badge {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background-color: var(--bg-secondary);
-  padding: 8px 16px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-light);
-}
-
 .user-role-tag {
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 4px 12px;
+  border-radius: 9999px;
   background-color: var(--primary-glow);
   color: var(--primary);
+  border: 1px solid var(--primary);
 }
 
 .card-grid {
@@ -439,32 +323,29 @@
 
 .dashboard-card {
   background-color: var(--bg-secondary);
-  border: 1px solid var(--border-light);
+  border: 2px solid var(--border-light);
   border-radius: var(--radius-lg);
   padding: 24px;
   transition: all var(--transition-normal);
 }
 
 .dashboard-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-  border-color: rgba(16, 185, 129, 0.2);
+  border-color: var(--primary);
+  box-shadow: 0 4px 20px var(--primary-glow);
 }
 
 .dashboard-card h4 {
-  font-size: 1.1rem;
-  color: var(--text-secondary);
-  margin-bottom: 12px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
 }
 
 .dashboard-card .value {
   font-size: 2.2rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--primary);
 }
 
 .dashboard-card .desc {
   font-size: 0.85rem;
   color: var(--text-muted);
-  margin-top: 8px;
 }
