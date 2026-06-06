@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 // ==========================================
 // 1. DASHBOARD OVERVIEW VIEW (Screen 3)
 // ==========================================
-export function ConsoleDashboard({ vendors, rfqs, auditLogs, onNavigate, userRole }) {
+export function ConsoleDashboard({ vendors, rfqs, onNavigate, userRole }) {
   const pendingApprovalsCount = rfqs.filter(r => r.status === 'Awaiting Approval').length;
   const activeRfqsCount = rfqs.filter(r => r.status === 'Active').length;
   
@@ -38,68 +38,53 @@ export function ConsoleDashboard({ vendors, rfqs, auditLogs, onNavigate, userRol
         </div>
       </div>
 
-      {/* Main Grid: Quick Actions + Recent Activity */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', flexWrap: 'wrap' }}>
+      {/* Main Grid: Recent RFQs + Chart */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '30px', flexWrap: 'wrap' }}>
         
-        {/* Quick Action Panel */}
-        <div className="glass-panel" style={{ padding: '24px', borderRadius: '8px', border: '1px solid var(--border)' }}>
-          <h3 style={{ fontSize: '16px', color: 'var(--text)', marginBottom: '16px', fontWeight: '600' }}>Quick Actions Console</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-            <button 
-              onClick={() => onNavigate('rfqs')} 
-              style={{ padding: '16px', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center', transition: 'var(--transition)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.backgroundColor = 'rgba(100,255,218,0.02)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.backgroundColor = 'var(--surface)'; }}
-            >
-              <span style={{ fontSize: '24px' }}>📝</span>
-              <span style={{ fontSize: '13px', fontWeight: '600' }}>Create RFQ</span>
-            </button>
-            <button 
-              onClick={() => onNavigate('quotes')} 
-              style={{ padding: '16px', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center', transition: 'var(--transition)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.backgroundColor = 'rgba(100,255,218,0.02)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.backgroundColor = 'var(--surface)'; }}
-            >
-              <span style={{ fontSize: '24px' }}>📩</span>
-              <span style={{ fontSize: '13px', fontWeight: '600' }}>Submit Quotation</span>
-            </button>
-            <button 
-              onClick={() => onNavigate('compare')} 
-              style={{ padding: '16px', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center', transition: 'var(--transition)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.backgroundColor = 'rgba(100,255,218,0.02)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.backgroundColor = 'var(--surface)'; }}
-            >
-              <span style={{ fontSize: '24px' }}>📊</span>
-              <span style={{ fontSize: '13px', fontWeight: '600' }}>Compare Quotations</span>
-            </button>
-            <button 
-              onClick={() => onNavigate('approvals')} 
-              style={{ padding: '16px', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center', transition: 'var(--transition)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.backgroundColor = 'rgba(100,255,218,0.02)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.backgroundColor = 'var(--surface)'; }}
-            >
-              <span style={{ fontSize: '24px' }}>🛡️</span>
-              <span style={{ fontSize: '13px', fontWeight: '600' }}>Procurement Approvals</span>
-            </button>
+        {/* Recent RFQs Table */}
+        <div className="glass-panel" style={{ padding: '24px', borderRadius: '8px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h3 style={{ fontSize: '16px', color: 'var(--text)', fontWeight: '600' }}>Recent RFQ's</h3>
+            <button onClick={() => onNavigate('rfqs')} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: '12px', cursor: 'pointer' }}>View All</button>
+          </div>
+          <div className="erp-table-container" style={{ flexGrow: 1, overflowY: 'auto' }}>
+            <table className="erp-table" style={{ width: '100%', fontSize: '13px' }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: 'left', padding: '10px' }}>RFQ ID</th>
+                  <th style={{ textAlign: 'left', padding: '10px' }}>Title</th>
+                  <th style={{ textAlign: 'left', padding: '10px' }}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rfqs.slice(0, 5).map((rfq, idx) => (
+                  <tr key={idx} style={{ borderBottom: '1px solid var(--border-light)' }}>
+                    <td style={{ padding: '10px', color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>{rfq.id}</td>
+                    <td style={{ padding: '10px', color: 'var(--text)' }}>{rfq.title}</td>
+                    <td style={{ padding: '10px' }}>
+                      <span className={`badge ${rfq.status === 'Active' ? 'badge-emerald' : rfq.status === 'Approved' ? 'badge-emerald' : 'badge-yellow'}`}>
+                        {rfq.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
 
-        {/* Recent Activity Mini Log */}
-        <div className="glass-panel" style={{ padding: '24px', borderRadius: '8px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '16px', color: 'var(--text)', fontWeight: '600' }}>Recent System Operations</h3>
-            <button onClick={() => onNavigate('logs')} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: '12px' }}>View All</button>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto', maxHeight: '180px', flexGrow: 1 }}>
-            {auditLogs.slice(0, 5).map((log, i) => (
-              <div key={i} style={{ display: 'flex', gap: '10px', fontSize: '12px', borderBottom: '1px solid rgba(35, 53, 84, 0.3)', paddingBottom: '8px' }}>
-                <span style={{ color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>{log.time}</span>
-                <div>
-                  <strong style={{ color: 'var(--text)' }}>{log.role.replace('_', ' ')}:</strong>
-                  <span style={{ color: 'var(--text-muted)', marginLeft: '6px' }}>{log.action}</span>
-                </div>
-              </div>
-            ))}
+        {/* Analytics Chart Placeholder */}
+        <div className="glass-panel" style={{ padding: '24px', borderRadius: '8px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '250px' }}>
+          <h3 style={{ fontSize: '16px', color: 'var(--text)', fontWeight: '600', alignSelf: 'flex-start', marginBottom: '16px' }}>Spending Analytics</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexGrow: 1, opacity: 0.6 }}>
+            <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="3" y1="9" x2="21" y2="9"></line>
+              <line x1="9" y1="21" x2="9" y2="9"></line>
+              <path d="M12 17l2.5-2.5L17 17"></path>
+              <path d="M12 13l2.5-2.5L17 13"></path>
+            </svg>
+            <p style={{ marginTop: '16px', fontSize: '13px', color: 'var(--text-muted)' }}>Chart Placeholder</p>
           </div>
         </div>
 
@@ -527,7 +512,12 @@ export function ConsoleSubmitQuote({ rfqs, quotes, setQuotes, setRfqs, vendors, 
             <textarea className="form-control" rows="2" placeholder="Include any support terms..." value={notes} onChange={e => setNotes(e.target.value)} />
           </div>
 
-          <button type="submit" className="emerald-glow" style={{ backgroundColor: 'var(--accent)', color: 'var(--bg)', border: 'none', padding: '12px', borderRadius: '4px', fontWeight: '700', marginTop: '10px' }}>Sign & Submit Quotation Bid</button>
+          <div className="form-group" style={{ marginTop: '16px' }}>
+            <label>Upload Quote Document (PDF/DOCX) *</label>
+            <input type="file" className="form-control" accept=".pdf,.doc,.docx" required />
+          </div>
+
+          <button type="submit" className="emerald-glow" style={{ backgroundColor: 'var(--accent)', color: 'var(--bg)', border: 'none', padding: '12px', borderRadius: '4px', fontWeight: '700', marginTop: '20px' }}>Sign & Submit Quotation Bid</button>
         </form>
       </div>
     </div>
@@ -604,80 +594,46 @@ export function ConsoleCompare({ rfqs, quotes, setRfqs, addLog, onNavigate }) {
           No quotations submitted yet for this RFQ. Switch your role to **Vendor** or use the **Submit Quotation** screen to submit a bid.
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-          {activeQuotes.map((quote, idx) => {
-            const isLowest = quote.price === lowestPrice;
-            return (
-              <div
-                key={idx}
-                className={`glass-panel compare-col ${isLowest ? 'highlighted' : ''}`}
-                style={{
-                  padding: '24px',
-                  borderRadius: '8px',
-                  border: isLowest ? '2px solid var(--accent)' : '1px solid var(--border)',
-                  position: 'relative',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '12px',
-                }}
-              >
-                {isLowest && (
-                  <span style={{
-                    position: 'absolute',
-                    top: '-10px',
-                    right: '12px',
-                    backgroundColor: 'var(--accent)',
-                    color: 'var(--bg)',
-                    fontSize: '9px',
-                    fontWeight: '800',
-                    padding: '2px 8px',
-                    borderRadius: '4px',
-                    letterSpacing: '0.5px',
-                  }}>
-                    Lowest Price
-                  </span>
-                )}
-                <div>
-                  <h3 style={{ fontSize: '17px', fontWeight: '700', color: 'var(--text)' }}>{quote.vendorName}</h3>
-                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Verified Supplier</span>
-                </div>
-
-                <div style={{ borderBottom: '1px solid rgba(230, 241, 255, 0.1)', paddingBottom: '12px' }}>
-                  <div style={{ fontSize: '24px', fontWeight: '800', color: isLowest ? 'var(--accent)' : 'var(--text)', margin: '4px 0' }}>
-                    ₹{quote.price.toLocaleString()}
-                  </div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Delivery: <strong>{quote.leadTime} Days</strong></div>
-                </div>
-
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)', flexGrow: 1 }}>
-                  <strong>Notes:</strong> {quote.notes || 'No comments provided.'}
-                </div>
-
-                {selectedRfq?.status === 'Active' ? (
-                  <button
-                    onClick={() => handleRouteApproval(quote)}
-                    className="emerald-glow"
-                    style={{
-                      backgroundColor: 'var(--accent)',
-                      color: 'var(--bg)',
-                      border: 'none',
-                      padding: '10px',
-                      borderRadius: '4px',
-                      fontWeight: '700',
-                      fontSize: '13px',
-                      marginTop: '10px',
-                    }}
-                  >
-                    Select & Route for Approval
-                  </button>
-                ) : (
-                  <div style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)', borderTop: '1px solid var(--border)', paddingTop: '10px', marginTop: '10px' }}>
-                    RFQ Status: <span style={{ color: 'var(--accent)', fontWeight: '600' }}>{selectedRfq?.status}</span>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+        <div className="erp-table-container">
+          <table className="erp-table" style={{ width: '100%' }}>
+            <thead>
+              <tr>
+                <th>Vendor Name</th>
+                <th>Bid Amount</th>
+                <th>Lead Time</th>
+                <th>Notes / Warranties</th>
+                <th style={{ textAlign: 'center' }}>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {activeQuotes.map((quote, idx) => {
+                const isLowest = quote.price === lowestPrice;
+                return (
+                  <tr key={idx} style={{ backgroundColor: isLowest ? 'rgba(100, 255, 218, 0.05)' : 'transparent', borderLeft: isLowest ? '3px solid var(--accent)' : '3px solid transparent' }}>
+                    <td style={{ fontWeight: '600', color: isLowest ? 'var(--accent)' : 'var(--text)' }}>
+                      {quote.vendorName} {isLowest && <span style={{ fontSize: '10px', backgroundColor: 'var(--accent)', color: 'var(--bg)', padding: '2px 6px', borderRadius: '4px', marginLeft: '8px', verticalAlign: 'middle' }}>Best Price</span>}
+                    </td>
+                    <td style={{ fontWeight: '700', fontSize: '15px' }}>₹{quote.price.toLocaleString()}</td>
+                    <td>{quote.leadTime} Days</td>
+                    <td style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{quote.notes || '--'}</td>
+                    <td style={{ textAlign: 'center' }}>
+                      {selectedRfq?.status === 'Active' ? (
+                        <button
+                          onClick={() => handleRouteApproval(quote)}
+                          className="emerald-glow"
+                          style={{ backgroundColor: 'var(--accent)', color: 'var(--bg)', border: 'none', padding: '6px 12px', borderRadius: '4px', fontWeight: '600', fontSize: '12px' }}
+                        >
+                          Select & Route
+                        </button>
+                      ) : (
+                        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{selectedRfq?.status}</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
