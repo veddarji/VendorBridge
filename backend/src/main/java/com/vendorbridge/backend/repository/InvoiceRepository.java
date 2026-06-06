@@ -7,16 +7,14 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 /**
- * Spring Data Repository for the {@link Invoice} entity.
+ * Invoice Repository.
  */
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
-
     /**
-     * Find invoice by invoice number.
-     *
-     * @param invoiceNumber invoice number
-     * @return optional containing invoice if found
+     * Find by invoice number.
+     * @param invoiceNumber the invoice number
+     * @return the optional Invoice
      */
     Optional<Invoice> findByInvoiceNumber(String invoiceNumber);
 }

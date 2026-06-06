@@ -7,16 +7,14 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 /**
- * Spring Data Repository for the {@link PurchaseOrder} entity.
+ * PurchaseOrder Repository.
  */
 @Repository
 public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Long> {
-
     /**
-     * Find purchase order by its PO document number.
-     *
-     * @param poNumber PO code
-     * @return optional containing purchase order if found
+     * Find by PO number.
+     * @param poNumber the po number
+     * @return the optional PO
      */
     Optional<PurchaseOrder> findByPoNumber(String poNumber);
 }

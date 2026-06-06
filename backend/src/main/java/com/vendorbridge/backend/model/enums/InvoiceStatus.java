@@ -1,12 +1,8 @@
 package com.vendorbridge.backend.model.enums;
 
 /**
- * Enum class.
+ * Enum for Invoice Status.
  */
 public enum InvoiceStatus {
-    PENDING,
-    PAID,
-    OVERDUE,
-    VOID,
-    CANCELLED
+    PENDING, PAID, CANCELLED
 }

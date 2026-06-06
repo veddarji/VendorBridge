@@ -677,21 +677,54 @@ export function ConsoleApprovals({ rfqs, setRfqs, addLog, onNavigate, setPoData 
     addLog('manager', `${nextStatus} RFQ ${rfq.id}. Remarks: "${remarks}"`);
     
     if (status === 'approve') {
-      // Set the active PO details to display in the PO screen
-      const suffix = String(rfq.id).replace(/\D/g, '').slice(-2).padStart(2, '0');
-      const poNum = `PO-2026-98${suffix}`;
-      setPoData({
-        poNumber: poNum,
-        rfqId: rfq.id,
-        title: rfq.title,
-        vendor: rfq.selectedVendor,
-        amount: rfq.selectedBid,
-        qty: rfq.qty,
-        leadTime: rfq.selectedLeadTime,
-        remarks: remarks,
-      });
-      alert(`RFQ ${rfq.id} approved successfully! Purchase Order ${poNum} is generated.`);
-      onNavigate('pos');
+      const createPo = async () => {
+        try {
+          const token = localStorage.getItem('jwt_token');
+          const res = await fetch('http://localhost:8081/api/pos/from-rfq', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': token ? `Bearer ${token}` : ''
+            },
+            body: JSON.stringify({
+              rfqId: rfq.id,
+              vendorName: rfq.selectedVendor,
+              bidAmount: rfq.selectedBid,
+              remarks: remarks
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            // Automatically generate invoice
+            const invRes = await fetch(`http://localhost:8081/api/invoices/from-po/${data.poNumber}`, {
+              method: 'POST',
+              headers: { 'Authorization': token ? `Bearer ${token}` : '' }
+            });
+            if (invRes.ok) {
+              const invData = await invRes.json();
+              setPoData({
+                poNumber: data.poNumber,
+                rfqId: rfq.id,
+                title: rfq.title,
+                vendor: rfq.selectedVendor,
+                amount: rfq.selectedBid,
+                qty: rfq.qty,
+                leadTime: rfq.selectedLeadTime,
+                remarks: remarks,
+                invoiceNumber: invData.invoiceNumber
+              });
+              alert(`RFQ ${rfq.id} approved successfully! Purchase Order ${data.poNumber} & Invoice ${invData.invoiceNumber} generated.`);
+              onNavigate('pos');
+            }
+          } else {
+            alert('Failed to generate PO');
+          }
+        } catch (error) {
+          console.error(error);
+          alert('Error generating PO');
+        }
+      };
+      createPo();
     } else {
       alert(`RFQ ${rfq.id} rejected.`);
       onNavigate('dashboard');
@@ -842,14 +875,54 @@ export function ConsolePOs({ poData, addLog }) {
     alert('Mock Print: Formatting document layout for local printer spooler...');
   };
 
-  const handleSendEmail = (e) => {
+  const handleDownloadPdf = async () => {
+    if (!poData || !poData.invoiceNumber) return;
+    try {
+      const token = localStorage.getItem('jwt_token');
+      const res = await fetch(`http://localhost:8081/api/invoices/${poData.invoiceNumber}/pdf`, {
+        headers: { 'Authorization': token ? `Bearer ${token}` : '' }
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${poData.invoiceNumber}.pdf`;
+        a.click();
+      } else {
+        alert('Failed to download PDF');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error downloading PDF');
+    }
+  };
+
+  const handleSendEmail = async (e) => {
     e.preventDefault();
+    if (!poData || !poData.invoiceNumber) return;
     setMailSent(true);
-    addLog('system', `Dispatched Email for Invoice Ref: INV-2026-${poData.poNumber.substring(8)} to ${email}`);
-    setTimeout(() => {
+    try {
+      const token = localStorage.getItem('jwt_token');
+      const res = await fetch(`http://localhost:8081/api/invoices/${poData.invoiceNumber}/email`, {
+        method: 'POST',
+        headers: { 'Authorization': token ? `Bearer ${token}` : '' }
+      });
+      if (res.ok) {
+        addLog('system', `Dispatched Email for Invoice Ref: ${poData.invoiceNumber} to ${email}`);
+        setTimeout(() => {
+          setMailSent(false);
+          alert(`Email dispatched successfully to ${email}`);
+        }, 1000);
+      } else {
+        alert('Failed to send email');
+        setMailSent(false);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error sending email');
       setMailSent(false);
-      alert(`Email dispatched successfully to ${email}`);
-    }, 2000);
+    }
   };
 
   return (
@@ -875,7 +948,7 @@ export function ConsolePOs({ poData, addLog }) {
             🖨️ Print Document
           </button>
           <button
-            onClick={() => alert(`Filing: Document ${poData.poNumber}.pdf has been downloaded.`)}
+            onClick={handleDownloadPdf}
             className="emerald-glow"
             style={{
               backgroundColor: 'var(--accent)',
@@ -903,7 +976,7 @@ export function ConsolePOs({ poData, addLog }) {
             </div>
             <div style={{ textAlign: 'right' }}>
               <h4 style={{ color: 'var(--accent)', fontSize: '18px', fontWeight: '700' }}>INVOICE</h4>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No: INV-2026-{poData.poNumber.substring(8)}</p>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No: {poData.invoiceNumber || `INV-${poData.poNumber}`}</p>
               <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>PO Ref: {poData.poNumber}</p>
             </div>
           </div>
